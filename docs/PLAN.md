@@ -23,25 +23,25 @@ viennent de `docs/ACCEPTANCE_CRITERIA.md`, jamais du code (déroulé complet dan
       expirables, CI GitHub Actions
 - [x] Documentation : CLAUDE.md, ARCHITECTURE, DEPENDENCY_POLICY, ADR, PLAN, README
 - [x] Critères d'acceptation des phases 1 à 4 rédigés (`docs/ACCEPTANCE_CRITERIA.md`)
-- [ ] Premier commit d'initialisation + création du dépôt distant
+- [x] Premier commit d'initialisation + création du dépôt distant
 
 ## Phase 1 — Domaine (`packages/core/src/domain`)
 
-- [ ] 🧪 Critères CA-DOM-01 à 08 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits (tests paramétrés sur les 4 météos et 7 jours, entrées
+- [x] 🧪 Critères CA-DOM-01 à 08 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Tests d'acceptation écrits (tests paramétrés sur les 4 météos et 7 jours, entrées
       invalides), échouant pour la bonne raison, relus, commit `test(…): … (rouge)`
 
 Implémentation :
 
-- [ ] `WeatherType`, `DayOfWeek`, `ChannelType` (tuples `as const` + types union + gardes `isWeatherType`…)
-- [ ] `UserId` (value object, `parse` avec validation)
-- [ ] `TrackQuery` (titre + artiste optionnel, normalisation pour la clé de cache) et `Track`
+- [x] `WeatherType`, `DayOfWeek`, `ChannelType` (tuples `as const` + types union + gardes `isWeatherType`…)
+- [x] `UserId` (value object, `parse` avec validation)
+- [x] `TrackQuery` (titre + artiste optionnel, normalisation pour la clé de cache) et `Track`
       (`title`, `artist`, `link?`, `source`) avec fabrique `create`
-- [ ] `UserPreferences` : morceau par météo (partiel), morceau de secours, canal préféré, coordonnées
-- [ ] `TrackSelectionPolicy` : météo couverte → morceau dédié, sinon morceau de secours 🎯
-- [ ] `WakeUpMessage.compose(track, day, weather)` : message localisé (FR)
-- [ ] `WakeUpReport` : track, trackSource, deliveredVia, attempts, degraded
-- [ ] Erreurs du domaine (`DomainError` et sous-classes)
+- [x] `UserPreferences` : morceau par météo (partiel), morceau de secours, canal préféré, coordonnées
+- [x] `TrackSelectionPolicy` : météo couverte → morceau dédié, sinon morceau de secours 🎯
+- [x] `WakeUpMessage.compose(track, day, weather)` : message localisé (FR)
+- [x] `WakeUpReport` : track, trackSource, deliveredVia, attempts, degraded
+- [x] Erreurs du domaine (`DomainError` et sous-classes)
 
 ## Phase 2 — Application (`packages/core/src/application`)
 

@@ -22,7 +22,9 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │  │           EmergencyPlaylist · Logger                                       │              │
 │  │ domain/                                                                    │              │
 │  │   WeatherType · DayOfWeek · Track · UserPreferences · ChannelType          │              │
-│  │   TrackSelectionPolicy · WakeUpMessage · WakeUpReport                      │              │
+│  │   UserId · TrackQuery · Recipient · DomainError (et sous-classes)          │              │
+│  │   TrackSelectionPolicy (WeatherTrackSelectionPolicy) · WakeUpMessage       │              │
+│  │   WakeUpReport                                                             │              │
 │  └───────────────────────────────▲────────────────────────────────────────────┘              │
 │                                  │ implémentent les ports                                    │
 │  infrastructure/                                                                             │
