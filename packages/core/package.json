@@ -1,0 +1,13 @@
+{
+  "name": "@reveil/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Domaine et cas d'usage du réveil musical. Aucune dépendance runtime : c'est volontaire et vérifié par dependency-cruiser.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

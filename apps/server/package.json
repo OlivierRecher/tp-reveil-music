@@ -1,0 +1,25 @@
+{
+  "name": "@reveil/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Adaptateurs d'infrastructure, composition root (DI) et API HTTP du réveil musical.",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=../../.env src/main.ts",
+    "start": "node --env-file-if-exists=../../.env src/main.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@reveil/core": "0.1.0",
+    "awilix": "13.0.5",
+    "cockatiel": "4.0.0",
+    "fastify": "5.12.5",
+    "lru-cache": "11.5.3",
+    "p-throttle": "8.1.1",
+    "pino": "10.4.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "pino-pretty": "13.2.0"
+  }
+}
