@@ -1,12 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { TrackQuery, TriggerWakeUp, UserId } from '@reveil/core';
 import type { WakeUpReport } from '@reveil/core';
-import type { AwilixContainer } from 'awilix';
 import { pino } from 'pino';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppConfig } from '../../src/config/env.ts';
-import { buildContainer } from '../../src/composition/container.ts';
-import type { AppCradle } from '../../src/composition/container.ts';
+import { composeApplication } from '../../src/composition/compositionRoot.ts';
+import type { Application } from '../../src/composition/compositionRoot.ts';
 import { HostRoutingFetch, ITUNES_HOST, MUSICBRAINZ_HOST } from '../doubles/HostRoutingFetch.ts';
 import { createTestWorkspace } from '../doubles/testConfig.ts';
 import type { TestWorkspace } from '../doubles/testConfig.ts';
@@ -14,62 +13,62 @@ import { loadFixture } from '../doubles/loadFixture.ts';
 
 // La règle « aucun `new` d'implémentation concrète hors de la composition root » (CA-CMP-01) est
 // vérifiée par `npm run lint` (no-restricted-syntax) et `npm run arch:check` : pas besoin de relancer
-// ESLint ici. Ces tests vérifient que le conteneur câble réellement le cas d'usage.
+// ESLint ici. Ces tests vérifient que la composition root câble réellement le cas d'usage.
 
 const QUERY = TrackQuery.create({ title: 'Riders on the Storm', artist: 'The Doors' });
 
 let workspace: TestWorkspace;
-let containers: Array<AwilixContainer<AppCradle>>;
+let apps: Array<Application>;
 
 beforeEach(() => {
   workspace = createTestWorkspace();
-  containers = [];
+  apps = [];
 });
 
 afterEach(async () => {
   vi.useRealTimers();
-  await Promise.all(containers.map((container) => container.dispose()));
+  await Promise.all(apps.map((app) => app.dispose()));
   workspace.cleanup();
 });
 
-/** Conteneur sans réseau ni sortie console : faux `fetch` et pino silencieux. */
-function containerFor(config: AppConfig, fetch: HostRoutingFetch): AwilixContainer<AppCradle> {
-  const container = buildContainer(config, {
+/** Application sans réseau ni sortie console : faux `fetch` et pino silencieux. */
+function appFor(config: AppConfig, fetch: HostRoutingFetch): Application {
+  const app = composeApplication(config, {
     httpFetch: fetch.fetch,
     pinoLogger: pino({ level: 'silent' }),
   });
-  containers.push(container);
-  return container;
+  apps.push(app);
+  return app;
 }
 
-function wakeUpU1(container: AwilixContainer<AppCradle>): Promise<WakeUpReport> {
-  return container.resolve('triggerWakeUp').execute({
+function wakeUpU1(app: Application): Promise<WakeUpReport> {
+  return app.triggerWakeUp.execute({
     userId: UserId.parse('u1'),
     dayOfWeek: 'LUNDI',
     weather: 'PLUIE',
   });
 }
 
-describe('buildContainer — résolution des dépendances', () => {
-  it('[CA-CMP-01] résout le cas d’usage TriggerWakeUp et ses dépendances', () => {
+describe('composeApplication — assemblage des dépendances', () => {
+  it('[CA-CMP-01] assemble le cas d’usage TriggerWakeUp et ses dépendances', () => {
     const config = workspace.config();
-    const container = containerFor(config, new HostRoutingFetch());
+    const app = appFor(config, new HostRoutingFetch());
 
-    expect(container.resolve('triggerWakeUp')).toBeInstanceOf(TriggerWakeUp);
-    expect(container.resolve('musicCatalog')).toBeDefined();
-    expect(container.resolve('userPreferencesProvider')).toBeDefined();
-    expect(container.resolve('logger')).toBeDefined();
-    expect(container.resolve('config')).toBe(config);
+    expect(app.triggerWakeUp).toBeInstanceOf(TriggerWakeUp);
+    expect(app.musicCatalog).toBeDefined();
+    expect(app.userPreferencesProvider).toBeDefined();
+    expect(app.logger).toBeDefined();
+    expect(app.config).toBe(config);
   });
 
-  it('[CA-CMP-01] le cas d’usage résolu fonctionne de bout en bout (préférences, musique, canal)', async () => {
+  it('[CA-CMP-01] le cas d’usage assemblé fonctionne de bout en bout (préférences, musique, canal)', async () => {
     const fetch = new HostRoutingFetch().respondJson(
       ITUNES_HOST,
       loadFixture('itunes-search.json'),
     );
-    const container = containerFor(workspace.config(), fetch);
+    const app = appFor(workspace.config(), fetch);
 
-    const report = await wakeUpU1(container);
+    const report = await wakeUpU1(app);
 
     expect(report).toMatchObject({
       userId: 'u1',
@@ -82,46 +81,28 @@ describe('buildContainer — résolution des dépendances', () => {
   });
 
   it('[CA-CMP-01] enregistre les canaux EMAIL, SMS et PUSH, et LOG en dernier recours', () => {
-    const container = containerFor(workspace.config(), new HostRoutingFetch());
+    const app = appFor(workspace.config(), new HostRoutingFetch());
 
-    const types = container.resolve('notificationChannels').map((channel) => channel.type);
+    const types = app.notificationChannels.map((channel) => channel.type);
     expect([...types].sort()).toEqual(['EMAIL', 'PUSH', 'SMS']);
-    expect(container.resolve('lastResortChannel').type).toBe('LOG');
+    expect(app.lastResortChannel.type).toBe('LOG');
   });
 
   it('[CA-CMP-01] branche le mock du service de préférences (utilisateurs du jeu de données)', async () => {
-    const container = containerFor(workspace.config(), new HostRoutingFetch());
+    const app = appFor(workspace.config(), new HostRoutingFetch());
 
-    const preferences = await container
-      .resolve('userPreferencesProvider')
-      .findByUserId(UserId.parse('u1'));
+    const preferences = await app.userPreferencesProvider.findByUserId(UserId.parse('u1'));
 
     expect(preferences?.preferredChannel).toBe('EMAIL');
   });
-
-  it('[CA-CMP-01] le cas d’usage est un singleton', () => {
-    const container = containerFor(workspace.config(), new HostRoutingFetch());
-
-    expect(container.resolve('triggerWakeUp')).toBe(container.resolve('triggerWakeUp'));
-  });
-
-  it('[CA-CMP-01] la composition root n’utilise pas loadModules (exception d’audit ADR-0003)', () => {
-    const source = readFileSync(
-      new URL('../../src/composition/container.ts', import.meta.url),
-      'utf8',
-    );
-
-    expect(source).not.toMatch(/\bloadModules\s*\(/);
-    expect(source).not.toMatch(/import\s*\{[^}]*\bloadModules\b[^}]*\}\s*from\s*['"]awilix['"]/);
-  });
 });
 
-describe('buildContainer — chaîne musicale configurée par MUSIC_PROVIDERS', () => {
+describe('composeApplication — chaîne musicale configurée par MUSIC_PROVIDERS', () => {
   it('[CA-CMP-02] ordre par défaut : iTunes puis MusicBrainz, puis morceau local', async () => {
     const fetch = new HostRoutingFetch();
-    const container = containerFor(workspace.config(), fetch);
+    const app = appFor(workspace.config(), fetch);
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(fetch.hosts).toEqual([ITUNES_HOST, MUSICBRAINZ_HOST]);
     expect(track.source).toBe('local');
@@ -129,12 +110,9 @@ describe('buildContainer — chaîne musicale configurée par MUSIC_PROVIDERS', 
 
   it('[CA-CMP-02] MUSIC_PROVIDERS=musicbrainz,itunes interroge MusicBrainz avant iTunes', async () => {
     const fetch = new HostRoutingFetch();
-    const container = containerFor(
-      workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }),
-      fetch,
-    );
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }), fetch);
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST, ITUNES_HOST]);
     expect(track.source).toBe('local');
@@ -142,9 +120,9 @@ describe('buildContainer — chaîne musicale configurée par MUSIC_PROVIDERS', 
 
   it('[CA-CMP-02] MUSIC_PROVIDERS=musicbrainz retire iTunes de la chaîne', async () => {
     const fetch = new HostRoutingFetch();
-    const container = containerFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz' }), fetch);
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz' }), fetch);
 
-    await container.resolve('musicCatalog').resolve(QUERY);
+    await app.musicCatalog.resolve(QUERY);
 
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
     expect(fetch.hosts).not.toContain(ITUNES_HOST);
@@ -152,9 +130,9 @@ describe('buildContainer — chaîne musicale configurée par MUSIC_PROVIDERS', 
 
   it('[CA-CMP-02] MUSIC_PROVIDERS vide : aucun appel HTTP, morceau local', async () => {
     const fetch = new HostRoutingFetch();
-    const container = containerFor(workspace.config({ MUSIC_PROVIDERS: '' }), fetch);
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: '' }), fetch);
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(fetch.hosts).toEqual([]);
     expect(track.source).toBe('local');
@@ -165,26 +143,23 @@ describe('buildContainer — chaîne musicale configurée par MUSIC_PROVIDERS', 
       MUSICBRAINZ_HOST,
       loadFixture('musicbrainz-recording.json'),
     );
-    const container = containerFor(
-      workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }),
-      fetch,
-    );
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }), fetch);
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(track.source).toBe('musicbrainz');
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
   });
 });
 
-describe('buildContainer — décorateurs de la chaîne musicale', () => {
+describe('composeApplication — décorateurs de la chaîne musicale', () => {
   it('met en cache un morceau déjà résolu (un seul appel HTTP pour deux résolutions)', async () => {
     const fetch = new HostRoutingFetch().respondJson(
       ITUNES_HOST,
       loadFixture('itunes-search.json'),
     );
-    const container = containerFor(workspace.config({ MUSIC_PROVIDERS: 'itunes' }), fetch);
-    const catalog = container.resolve('musicCatalog');
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'itunes' }), fetch);
+    const catalog = app.musicCatalog;
 
     await catalog.resolve(QUERY);
     const second = await catalog.resolve(QUERY);
@@ -200,11 +175,11 @@ describe('buildContainer — décorateurs de la chaîne musicale', () => {
       ITUNES_HOST,
       loadFixture('itunes-search.json'),
     );
-    const container = containerFor(
+    const app = appFor(
       workspace.config({ MUSIC_PROVIDERS: 'itunes', ITUNES_MAX_REQUESTS_PER_MINUTE: '2' }),
       fetch,
     );
-    const catalog = container.resolve('musicCatalog');
+    const catalog = app.musicCatalog;
 
     // Requêtes distinctes : le cache ne s'applique pas.
     const first = await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }));
@@ -227,8 +202,8 @@ describe('buildContainer — décorateurs de la chaîne musicale', () => {
       MUSICBRAINZ_HOST,
       loadFixture('musicbrainz-recording.json'),
     );
-    const container = containerFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz' }), fetch);
-    const catalog = container.resolve('musicCatalog');
+    const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz' }), fetch);
+    const catalog = app.musicCatalog;
 
     const first = await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }));
     const second = await catalog.resolve(TrackQuery.create({ title: 'Titre 2' }));
@@ -243,25 +218,23 @@ describe('buildContainer — décorateurs de la chaîne musicale', () => {
   });
 });
 
-describe('buildContainer — pannes simulées par SIMULATED_FAILURES', () => {
+describe('composeApplication — pannes simulées par SIMULATED_FAILURES', () => {
   it('[CA-CMP-05] « preferences » branche un service de préférences en panne', async () => {
-    const container = containerFor(
+    const app = appFor(
       workspace.config({ SIMULATED_FAILURES: 'preferences' }),
       new HostRoutingFetch(),
     );
 
-    await expect(
-      container.resolve('userPreferencesProvider').findByUserId(UserId.parse('u1')),
-    ).rejects.toThrow();
+    await expect(app.userPreferencesProvider.findByUserId(UserId.parse('u1'))).rejects.toThrow();
   });
 
   it('[CA-CMP-05] « itunes » simule la panne sans atteindre le réseau, la chaîne bascule', async () => {
     const fetch = new HostRoutingFetch()
       .respondJson(ITUNES_HOST, loadFixture('itunes-search.json'))
       .respondJson(MUSICBRAINZ_HOST, loadFixture('musicbrainz-recording.json'));
-    const container = containerFor(workspace.config({ SIMULATED_FAILURES: 'itunes' }), fetch);
+    const app = appFor(workspace.config({ SIMULATED_FAILURES: 'itunes' }), fetch);
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(track.source).toBe('musicbrainz');
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
@@ -272,24 +245,21 @@ describe('buildContainer — pannes simulées par SIMULATED_FAILURES', () => {
       MUSICBRAINZ_HOST,
       loadFixture('musicbrainz-recording.json'),
     );
-    const container = containerFor(
+    const app = appFor(
       workspace.config({ MUSIC_PROVIDERS: 'musicbrainz', SIMULATED_FAILURES: 'musicbrainz' }),
       fetch,
     );
 
-    const track = await container.resolve('musicCatalog').resolve(QUERY);
+    const track = await app.musicCatalog.resolve(QUERY);
 
     expect(track.source).toBe('local');
     expect(fetch.hosts).toEqual([]);
   });
 
   it('[CA-CMP-05] « email » met le canal e-mail en panne : u1 est réveillé par un autre canal', async () => {
-    const container = containerFor(
-      workspace.config({ SIMULATED_FAILURES: 'email' }),
-      new HostRoutingFetch(),
-    );
+    const app = appFor(workspace.config({ SIMULATED_FAILURES: 'email' }), new HostRoutingFetch());
 
-    const report = await wakeUpU1(container);
+    const report = await wakeUpU1(app);
 
     expect(report.attempts[0]).toMatchObject({ channel: 'EMAIL', success: false });
     expect(['SMS', 'PUSH']).toContain(report.deliveredVia);
@@ -297,12 +267,12 @@ describe('buildContainer — pannes simulées par SIMULATED_FAILURES', () => {
   });
 
   it('[CA-CMP-05] « email,sms,push » : u1 est réveillé par le canal LOG de dernier recours', async () => {
-    const container = containerFor(
+    const app = appFor(
       workspace.config({ SIMULATED_FAILURES: 'email,sms,push' }),
       new HostRoutingFetch(),
     );
 
-    const report = await wakeUpU1(container);
+    const report = await wakeUpU1(app);
 
     // Ordre entre SMS et PUSH = ordre d'enregistrement, non imposé par les critères.
     const failed = report.attempts.slice(0, -1);
