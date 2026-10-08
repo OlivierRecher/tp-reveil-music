@@ -1,11 +1,5 @@
 import type { NotificationLog } from '../NotificationLog.ts';
-
-export interface PushPayload {
-  readonly title: string;
-  readonly body: string;
-}
-
-export type PushCallback = (error: Error | null) => void;
+import type { PushCallback, PushPayload, PushService } from '../PushService.ts';
 
 interface Deps {
   readonly notificationLog: NotificationLog;
@@ -17,7 +11,7 @@ interface Deps {
  * Mock d'un service de push (style callback « à la Node ») : écrit l'envoi dans le journal, sans
  * envoi réel, puis appelle `callback(null)`. En panne, appelle `callback(erreur)`.
  */
-export class FakePushService {
+export class FakePushService implements PushService {
   readonly #notificationLog: NotificationLog;
   readonly #failing: boolean;
 

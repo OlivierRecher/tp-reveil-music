@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FakePushService } from '../../../../src/infrastructure/notification/vendors/FakePushService.ts';
-import type { PushPayload } from '../../../../src/infrastructure/notification/vendors/FakePushService.ts';
+import type { PushPayload } from '../../../../src/infrastructure/notification/PushService.ts';
 import { MemoryNotificationLog } from '../doubles/MemoryNotificationLog.ts';
 
 const DEVICE_TOKEN = 'push-token-alice';

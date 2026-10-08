@@ -1,5 +1,5 @@
 import { describeError } from '@reveil/core';
-import type { Logger, MusicCatalog, Track, TrackQuery } from '@reveil/core';
+import type { Logger, MusicCatalog, ResolvedTrack, TrackQuery } from '@reveil/core';
 import type { MusicProvider } from './MusicProvider.ts';
 
 interface Deps {
@@ -10,7 +10,8 @@ interface Deps {
 
 /**
  * Chaîne de responsabilité : essaie les fournisseurs dans l'ordre configuré, journalise chaque échec
- * (`warn`) et termine par le fournisseur local, qui ne rejette jamais.
+ * (`warn`) et termine par le fournisseur local, qui ne rejette jamais. Le recours au fournisseur local
+ * est signalé par `degraded: true` (CA-APP-10) : le cas d'usage n'a pas à interpréter la source.
  */
 export class FallbackMusicCatalog implements MusicCatalog {
   readonly #musicProviders: ReadonlyArray<MusicProvider>;
@@ -23,10 +24,10 @@ export class FallbackMusicCatalog implements MusicCatalog {
     this.#logger = logger;
   }
 
-  async resolve(query: TrackQuery): Promise<Track> {
+  async resolve(query: TrackQuery): Promise<ResolvedTrack> {
     for (const provider of this.#musicProviders) {
       try {
-        return await provider.resolve(query);
+        return { track: await provider.resolve(query), degraded: false };
       } catch (error) {
         // Toute erreur, typée ou non, fait basculer sur le maillon suivant : jamais de crash.
         this.#logger.warn(`Fournisseur musical « ${provider.name} » en échec, bascule`, {
@@ -35,6 +36,6 @@ export class FallbackMusicCatalog implements MusicCatalog {
         });
       }
     }
-    return this.#localMusicProvider.resolve(query);
+    return { track: await this.#localMusicProvider.resolve(query), degraded: true };
   }
 }

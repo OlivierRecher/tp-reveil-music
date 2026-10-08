@@ -1,5 +1,4 @@
 import type { DayOfWeek } from '../domain/DayOfWeek.ts';
-import { LOCAL_TRACK_SOURCE } from '../domain/Track.ts';
 import type { Track } from '../domain/Track.ts';
 import type { TrackSelectionPolicy } from '../domain/TrackSelectionPolicy.ts';
 import type { UserId } from '../domain/UserId.ts';
@@ -117,15 +116,15 @@ export class TriggerWakeUp {
   ): Promise<StepOutcome<Track>> {
     try {
       const query = this.#trackSelectionPolicy.select(preferences, weather, dayOfWeek);
-      const track = await this.#musicCatalog.resolve(query);
-      if (track.source === LOCAL_TRACK_SOURCE) {
+      const { track, degraded } = await this.#musicCatalog.resolve(query);
+      if (degraded) {
+        // Repli signalé par le catalogue (CA-APP-10) : jamais déduit de la source du morceau.
         this.#logger.warn('Catalogue replié sur un morceau local', {
           userId: userId.value,
           reason: 'fournisseurs musicaux indisponibles',
         });
-        return { value: track, degraded: true };
       }
-      return { value: track, degraded: false };
+      return { value: track, degraded };
     } catch (error) {
       this.#logger.warn('Résolution du morceau impossible, morceau de secours local', {
         userId: userId.value,

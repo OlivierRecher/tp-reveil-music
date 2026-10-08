@@ -25,7 +25,7 @@ async function consumeBudget(
   provider: RateLimitedMusicProvider | FallbackMusicCatalog,
 ): Promise<void> {
   for (let index = 0; index < MAX_REQUESTS; index += 1) {
-    const settled = observe(provider.resolve(QUERY));
+    const settled = observe<unknown>(provider.resolve(QUERY));
     await flush();
     expect(settled().status, `appel n° ${String(index + 1)} dans le budget`).toBe('fulfilled');
   }
@@ -112,7 +112,9 @@ describe('RateLimitedMusicProvider', () => {
 
     const outcome = settled();
     expect(outcome.status).toBe('fulfilled');
-    expect(outcome.status === 'fulfilled' ? outcome.value.source : undefined).toBe('musicbrainz');
+    expect(outcome.status === 'fulfilled' ? outcome.value.track.source : undefined).toBe(
+      'musicbrainz',
+    );
     expect(itunes.calls).toBe(MAX_REQUESTS);
     expect(musicBrainz.calls).toBe(1);
   });

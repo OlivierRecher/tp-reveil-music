@@ -242,13 +242,47 @@ describe('TriggerWakeUp', () => {
         artist: 'The Beatles',
         source: LOCAL_TRACK_SOURCE,
       });
-      const { useCase, email } = setup({ catalog: new StubMusicCatalog(localTrack) });
+      const { useCase, email } = setup({
+        catalog: new StubMusicCatalog(localTrack, { degraded: true }),
+      });
 
       const report = await useCase.execute(SUNNY_MONDAY);
 
       expect(email.calls[0]?.message.track).toBe(localTrack);
       expect(report.trackSource).toBe(LOCAL_TRACK_SOURCE);
       expect(report.degraded).toBe(true);
+    });
+  });
+
+  describe('signal de repli du catalogue', () => {
+    it('[CA-APP-10] un morceau de source locale sans repli signalé est un fonctionnement normal', async () => {
+      const localTrack = Track.create({
+        title: 'Clair de lune',
+        artist: 'Debussy',
+        source: LOCAL_TRACK_SOURCE,
+      });
+      const { useCase, logger } = setup({
+        catalog: new StubMusicCatalog(localTrack, { degraded: false }),
+      });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(report.track).toBe(localTrack);
+      expect(report.degraded).toBe(false);
+      expect(logger.at('warn')).toHaveLength(0);
+    });
+
+    it('[CA-APP-10] un repli signalé par le catalogue rend le réveil dégradé, quelle que soit la source', async () => {
+      const { useCase, logger } = setup({
+        catalog: new StubMusicCatalog(RESOLVED_TRACK, { degraded: true }),
+      });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(report.track).toBe(RESOLVED_TRACK);
+      expect(report.trackSource).toBe('itunes');
+      expect(report.degraded).toBe(true);
+      expect(logger.at('warn')).toHaveLength(1);
     });
   });
 
@@ -406,10 +440,11 @@ describe('TriggerWakeUp', () => {
         command: SUNNY_MONDAY,
       },
       {
-        name: 'morceau local renvoyé par le catalogue',
+        name: 'repli local signalé par le catalogue',
         overrides: () => ({
           catalog: new StubMusicCatalog(
             Track.create({ title: 'Morning', artist: 'Grieg', source: LOCAL_TRACK_SOURCE }),
+            { degraded: true },
           ),
         }),
         command: SUNNY_MONDAY,

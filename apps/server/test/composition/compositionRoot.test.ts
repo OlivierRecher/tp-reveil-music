@@ -102,7 +102,7 @@ describe('composeApplication — chaîne musicale configurée par MUSIC_PROVIDER
     const fetch = new HostRoutingFetch();
     const app = appFor(workspace.config(), fetch);
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(fetch.hosts).toEqual([ITUNES_HOST, MUSICBRAINZ_HOST]);
     expect(track.source).toBe('local');
@@ -112,7 +112,7 @@ describe('composeApplication — chaîne musicale configurée par MUSIC_PROVIDER
     const fetch = new HostRoutingFetch();
     const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }), fetch);
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST, ITUNES_HOST]);
     expect(track.source).toBe('local');
@@ -132,7 +132,7 @@ describe('composeApplication — chaîne musicale configurée par MUSIC_PROVIDER
     const fetch = new HostRoutingFetch();
     const app = appFor(workspace.config({ MUSIC_PROVIDERS: '' }), fetch);
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(fetch.hosts).toEqual([]);
     expect(track.source).toBe('local');
@@ -145,7 +145,7 @@ describe('composeApplication — chaîne musicale configurée par MUSIC_PROVIDER
     );
     const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz,itunes' }), fetch);
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(track.source).toBe('musicbrainz');
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
@@ -162,7 +162,7 @@ describe('composeApplication — décorateurs de la chaîne musicale', () => {
     const catalog = app.musicCatalog;
 
     await catalog.resolve(QUERY);
-    const second = await catalog.resolve(QUERY);
+    const second = (await catalog.resolve(QUERY)).track;
 
     expect(second.source).toBe('itunes');
     expect(fetch.hosts).toEqual([ITUNES_HOST]);
@@ -182,16 +182,16 @@ describe('composeApplication — décorateurs de la chaîne musicale', () => {
     const catalog = app.musicCatalog;
 
     // Requêtes distinctes : le cache ne s'applique pas.
-    const first = await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }));
-    const second = await catalog.resolve(TrackQuery.create({ title: 'Titre 2' }));
-    const third = await catalog.resolve(TrackQuery.create({ title: 'Titre 3' }));
+    const first = (await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }))).track;
+    const second = (await catalog.resolve(TrackQuery.create({ title: 'Titre 2' }))).track;
+    const third = (await catalog.resolve(TrackQuery.create({ title: 'Titre 3' }))).track;
 
     expect([first.source, second.source, third.source]).toEqual(['itunes', 'itunes', 'local']);
     expect(fetch.hosts).toEqual([ITUNES_HOST, ITUNES_HOST]);
 
     // Une minute plus tard, le budget est de nouveau disponible.
     vi.setSystemTime(60_000);
-    const later = await catalog.resolve(TrackQuery.create({ title: 'Titre 4' }));
+    const later = (await catalog.resolve(TrackQuery.create({ title: 'Titre 4' }))).track;
     expect(later.source).toBe('itunes');
     expect(fetch.hosts).toEqual([ITUNES_HOST, ITUNES_HOST, ITUNES_HOST]);
   });
@@ -205,14 +205,14 @@ describe('composeApplication — décorateurs de la chaîne musicale', () => {
     const app = appFor(workspace.config({ MUSIC_PROVIDERS: 'musicbrainz' }), fetch);
     const catalog = app.musicCatalog;
 
-    const first = await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }));
-    const second = await catalog.resolve(TrackQuery.create({ title: 'Titre 2' }));
+    const first = (await catalog.resolve(TrackQuery.create({ title: 'Titre 1' }))).track;
+    const second = (await catalog.resolve(TrackQuery.create({ title: 'Titre 2' }))).track;
 
     expect([first.source, second.source]).toEqual(['musicbrainz', 'local']);
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
 
     vi.setSystemTime(1_000);
-    const later = await catalog.resolve(TrackQuery.create({ title: 'Titre 3' }));
+    const later = (await catalog.resolve(TrackQuery.create({ title: 'Titre 3' }))).track;
     expect(later.source).toBe('musicbrainz');
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST, MUSICBRAINZ_HOST]);
   });
@@ -234,7 +234,7 @@ describe('composeApplication — pannes simulées par SIMULATED_FAILURES', () =>
       .respondJson(MUSICBRAINZ_HOST, loadFixture('musicbrainz-recording.json'));
     const app = appFor(workspace.config({ SIMULATED_FAILURES: 'itunes' }), fetch);
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(track.source).toBe('musicbrainz');
     expect(fetch.hosts).toEqual([MUSICBRAINZ_HOST]);
@@ -250,7 +250,7 @@ describe('composeApplication — pannes simulées par SIMULATED_FAILURES', () =>
       fetch,
     );
 
-    const track = await app.musicCatalog.resolve(QUERY);
+    const track = (await app.musicCatalog.resolve(QUERY)).track;
 
     expect(track.source).toBe('local');
     expect(fetch.hosts).toEqual([]);

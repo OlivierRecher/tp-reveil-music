@@ -28,7 +28,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog, logger } = chain([itunes, musicBrainz], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('itunes');
       expect(callLog).toEqual(['itunes']);
@@ -43,7 +43,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog } = chain([itunes, musicBrainz, other], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('musicbrainz');
       expect(track.toJSON()).toEqual(musicBrainz.trackFor(QUERY).toJSON());
@@ -56,7 +56,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz', callLog).fail();
       const { catalog } = chain([musicBrainz, itunes], new ScriptedMusicProvider('local', callLog));
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('itunes');
       expect(callLog).toEqual(['musicbrainz', 'itunes']);
@@ -92,7 +92,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz');
       const { catalog } = chain([itunes, musicBrainz]);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('musicbrainz');
     });
@@ -106,7 +106,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog, logger } = chain([itunes, musicBrainz], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('local');
       expect(callLog).toEqual(['itunes', 'musicbrainz', 'local']);
@@ -118,7 +118,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz').fail(new Error('HTTP 503'));
       const { catalog } = chain([itunes, musicBrainz], new LocalMusicProvider());
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe(LOCAL_TRACK_SOURCE);
     });
@@ -126,9 +126,40 @@ describe('FallbackMusicCatalog', () => {
     it('[CA-MUS-08] sans fournisseur distant configuré, le fournisseur local répond', async () => {
       const { catalog } = chain([], new LocalMusicProvider());
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe(LOCAL_TRACK_SOURCE);
+    });
+  });
+  describe('signal de repli', () => {
+    it('[CA-APP-10] ne signale aucun repli quand un fournisseur distant répond', async () => {
+      const itunes = new ScriptedMusicProvider('itunes').fail();
+      const musicBrainz = new ScriptedMusicProvider('musicbrainz');
+      const { catalog } = chain([itunes, musicBrainz]);
+
+      const resolved = await catalog.resolve(QUERY);
+
+      expect(resolved.track.source).toBe('musicbrainz');
+      expect(resolved.degraded).toBe(false);
+    });
+
+    it('[CA-APP-10] signale le repli quand le morceau vient du fournisseur local', async () => {
+      const itunes = new ScriptedMusicProvider('itunes').fail();
+      const { catalog } = chain([itunes], new LocalMusicProvider());
+
+      const resolved = await catalog.resolve(QUERY);
+
+      expect(resolved.degraded).toBe(true);
+    });
+
+    it('[CA-APP-10] le signal ne dépend pas du nom de la source : un fournisseur distant nommé « local » n’est pas un repli', async () => {
+      const homonym = new ScriptedMusicProvider(LOCAL_TRACK_SOURCE);
+      const { catalog } = chain([homonym], new ScriptedMusicProvider('secours'));
+
+      const resolved = await catalog.resolve(QUERY);
+
+      expect(resolved.track.source).toBe(LOCAL_TRACK_SOURCE);
+      expect(resolved.degraded).toBe(false);
     });
   });
 });

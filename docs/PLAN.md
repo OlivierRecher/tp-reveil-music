@@ -192,6 +192,20 @@ Implémentation :
       exception d'audit et règles ESLint anti-`loadModules` retirées
 - [x] Documentation alignée (README, ARCHITECTURE, CLAUDE.md, DEPENDENCY_POLICY, DEMARRAGE, TESTS)
 
+## Après la v1.0.0 — Inversion des dépendances des canaux et signal de repli musical
+
+Suite à une revue externe : les adaptateurs de canal dépendaient des mocks concrets, et le cas d'usage
+détectait le repli musical en comparant la source du morceau à `'local'`.
+
+- [x] Critères CA-NOT-06 et CA-APP-10 rédigés et validés par l'équipe (2026-10-08)
+- [x] Tests CA-NOT-06 (rouge) : doublures écrites à la main des interfaces fournisseur, règle
+      dependency-cruiser « adaptateurs sans `vendors/` »
+- [x] Tests existants adaptés au nouveau retour de `MusicCatalog` (commit séparé), tests CA-APP-10 (rouge)
+- [x] Interfaces `EmailClient`, `SmsGateway`, `PushService` ; adaptateurs et mocks alignés (vert)
+- [x] `MusicCatalog.resolve` renvoie `{ track, degraded }` ; `TriggerWakeUp` n'utilise plus
+      `LOCAL_TRACK_SOURCE` (vert)
+- [x] Documentation alignée (ARCHITECTURE, ADR-0004)
+
 ---
 
 ## Risques identifiés

@@ -34,21 +34,22 @@ Sources : **É** = énoncé · **ADR-n** · **H** = hypothèse (ARCHITECTURE §6
 
 ## Phase 2 — Application (cas d'usage `TriggerWakeUp`)
 
-| ID        | Critère                                                                                                                                                       | Source                        | Validé |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------ |
-| CA-APP-01 | Nominal : un appel `(userId, jour, météo)` envoie exactement une notification, sur le canal préféré, avec le morceau choisi                                   | É                             | [x]    |
-| CA-APP-02 | Le cas d'usage ne dépend que d'interfaces (ports) : il est testable avec des doublures écrites à la main, sans réseau ni conteneur                            | É « Isolation », « IoC / DI » | [x]    |
-| CA-APP-03 | Si le catalogue musical lève une erreur, une notification est **quand même** envoyée avec un morceau de secours local, et le rapport indique `degraded: true` | É « un silence ne l'est pas » | [x]    |
-| CA-APP-04 | Si le canal préféré échoue, la notification est envoyée sur un autre canal disponible pour cet utilisateur ; le rapport liste la tentative échouée            | É « Fiabilité »               | [x]    |
-| CA-APP-05 | Si tous les canaux échouent, le canal de dernier recours (journal) reçoit le message ; le cas d'usage ne lève pas d'exception                                 | É « jamais empêcher l'envoi » | [x]    |
-| CA-APP-06 | Si le service de préférences est en panne ou l'utilisateur inconnu, un réveil est quand même émis (préférences par défaut), `degraded: true`                  | É, H                          | [x]    |
-| CA-APP-07 | En fonctionnement nominal, le rapport indique `degraded: false`                                                                                               | ADR-0004                      | [x]    |
-| CA-APP-08 | Toute bascule en mode dégradé est journalisée au niveau `warn`                                                                                                | ADR-0004                      | [x]    |
-| CA-APP-09 | Un canal n'est tenté que si l'utilisateur possède la coordonnée correspondante                                                                                | H                             | [x]    |
+| ID        | Critère                                                                                                                                                                        | Source                        | Validé |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- | ------ |
+| CA-APP-01 | Nominal : un appel `(userId, jour, météo)` envoie exactement une notification, sur le canal préféré, avec le morceau choisi                                                    | É                             | [x]    |
+| CA-APP-02 | Le cas d'usage ne dépend que d'interfaces (ports) : il est testable avec des doublures écrites à la main, sans réseau ni conteneur                                             | É « Isolation », « IoC / DI » | [x]    |
+| CA-APP-03 | Si le catalogue musical lève une erreur, une notification est **quand même** envoyée avec un morceau de secours local, et le rapport indique `degraded: true`                  | É « un silence ne l'est pas » | [x]    |
+| CA-APP-04 | Si le canal préféré échoue, la notification est envoyée sur un autre canal disponible pour cet utilisateur ; le rapport liste la tentative échouée                             | É « Fiabilité »               | [x]    |
+| CA-APP-05 | Si tous les canaux échouent, le canal de dernier recours (journal) reçoit le message ; le cas d'usage ne lève pas d'exception                                                  | É « jamais empêcher l'envoi » | [x]    |
+| CA-APP-06 | Si le service de préférences est en panne ou l'utilisateur inconnu, un réveil est quand même émis (préférences par défaut), `degraded: true`                                   | É, H                          | [x]    |
+| CA-APP-07 | En fonctionnement nominal, le rapport indique `degraded: false`                                                                                                                | ADR-0004                      | [x]    |
+| CA-APP-08 | Toute bascule en mode dégradé est journalisée au niveau `warn`                                                                                                                 | ADR-0004                      | [x]    |
+| CA-APP-09 | Un canal n'est tenté que si l'utilisateur possède la coordonnée correspondante                                                                                                 | H                             | [x]    |
+| CA-APP-10 | Le catalogue musical signale explicitement s'il s'est replié sur le fallback local ; le cas d'usage déduit le mode dégradé de ce signal, jamais du nom de la source du morceau | Revue externe, ADR-0004       | [x]    |
 
 Précision (décision d'équipe, 2026-10-08) : le rapport est `degraded: true` dès qu'une bascule a eu
-lieu, c'est-à-dire préférences par défaut, morceau de source locale (renvoyé par le catalogue ou tiré
-de `EmergencyPlaylist`), ou livraison sur un autre canal que le préféré. Un morceau de secours choisi
+lieu, c'est-à-dire préférences par défaut, repli local signalé par le catalogue (CA-APP-10) ou morceau
+tiré de `EmergencyPlaylist`, ou livraison sur un autre canal que le préféré. Un morceau de secours choisi
 par l'utilisateur pour une météo non couverte est un fonctionnement **normal** (`degraded: false`).
 
 ## Phase 3 — Adaptateurs
@@ -72,13 +73,14 @@ par l'utilisateur pour une météo non couverte est un fonctionnement **normal**
 
 ### Notifications
 
-| ID        | Critère                                                                                                                                    | Source                                   | Validé |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- | ------ |
-| CA-NOT-01 | Les mocks email, SMS et push exposent trois interfaces **différentes** (signatures et styles d'erreur distincts)                           | É « volontairement différente »          | [x]    |
-| CA-NOT-02 | Chaque mock écrit l'envoi dans la console ou un fichier de log, sans envoi réel                                                            | É                                        | [x]    |
-| CA-NOT-03 | Chaque adaptateur ramène son mock à l'interface commune `NotificationChannel`                                                              | É « ramener vers une interface commune » | [x]    |
-| CA-NOT-04 | Un rejet ou une erreur du mock (promesse rejetée, statut `REJECTED`, erreur de callback) devient un échec d'envoi uniforme côté adaptateur | É, ADR-0004                              | [x]    |
-| CA-NOT-05 | Ajouter un canal (ex. WhatsApp) ne demande aucune modification de `packages/core` hors de la liste des types de canal                      | É « nouveaux canaux »                    | [x]    |
+| ID        | Critère                                                                                                                                                                                                                            | Source                                   | Validé |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------ |
+| CA-NOT-01 | Les mocks email, SMS et push exposent trois interfaces **différentes** (signatures et styles d'erreur distincts)                                                                                                                   | É « volontairement différente »          | [x]    |
+| CA-NOT-02 | Chaque mock écrit l'envoi dans la console ou un fichier de log, sans envoi réel                                                                                                                                                    | É                                        | [x]    |
+| CA-NOT-03 | Chaque adaptateur ramène son mock à l'interface commune `NotificationChannel`                                                                                                                                                      | É « ramener vers une interface commune » | [x]    |
+| CA-NOT-04 | Un rejet ou une erreur du mock (promesse rejetée, statut `REJECTED`, erreur de callback) devient un échec d'envoi uniforme côté adaptateur                                                                                         | É, ADR-0004                              | [x]    |
+| CA-NOT-05 | Ajouter un canal (ex. WhatsApp) ne demande aucune modification de `packages/core` hors de la liste des types de canal                                                                                                              | É « nouveaux canaux »                    | [x]    |
+| CA-NOT-06 | Chaque adaptateur de canal dépend d'une interface du fournisseur (`EmailClient`, `SmsGateway`, `PushService`), pas d'un mock concret : il fonctionne avec toute implémentation de cette interface, et n'importe rien de `vendors/` | É « Isolation », revue externe           | [x]    |
 
 ### Préférences (mock du service interne)
 

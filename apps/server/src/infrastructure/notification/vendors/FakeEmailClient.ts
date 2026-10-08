@@ -1,15 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import type { EmailClient, EmailEnvelope, EmailReceipt } from '../EmailClient.ts';
 import type { NotificationLog } from '../NotificationLog.ts';
-
-export interface EmailEnvelope {
-  readonly to: string;
-  readonly subject: string;
-  readonly html: string;
-}
-
-export interface EmailReceipt {
-  readonly messageId: string;
-}
 
 interface Deps {
   readonly notificationLog: NotificationLog;
@@ -21,7 +12,7 @@ interface Deps {
  * Mock d'un fournisseur d'e-mail (style SDK à promesse) : écrit l'envoi dans le journal, sans
  * envoi réel. En panne, la promesse est rejetée.
  */
-export class FakeEmailClient {
+export class FakeEmailClient implements EmailClient {
   readonly #notificationLog: NotificationLog;
   readonly #failing: boolean;
 

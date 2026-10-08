@@ -1,19 +1,19 @@
 import type { ChannelType, NotificationChannel, Recipient, WakeUpMessage } from '@reveil/core';
 import { NotificationChannelError } from './NotificationChannelError.ts';
 import { requireAddress } from './requireAddress.ts';
-import type { FakeSmsGateway, SmsResult } from './vendors/FakeSmsGateway.ts';
+import type { SmsGateway, SmsResult } from './SmsGateway.ts';
 
 interface Deps {
-  readonly smsGateway: FakeSmsGateway;
+  readonly smsGateway: SmsGateway;
 }
 
 /**
- * Adapter : ramène l'API à statut de la passerelle SMS à `NotificationChannel`. Un statut
+ * Adapter : ramène l'API à statut d'une passerelle SMS (`SmsGateway`) à `NotificationChannel`. Un statut
  * `REJECTED` (ou un rejet) devient une `NotificationChannelError`.
  */
 export class SmsChannelAdapter implements NotificationChannel {
   readonly type: ChannelType = 'SMS';
-  readonly #smsGateway: FakeSmsGateway;
+  readonly #smsGateway: SmsGateway;
 
   constructor({ smsGateway }: Deps) {
     this.#smsGateway = smsGateway;
