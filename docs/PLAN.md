@@ -48,7 +48,7 @@ Implémentation :
 > Les ports (interfaces) sont créés **pendant** l'étape des tests rouges : ce sont des contrats sans
 > logique, nécessaires pour écrire les doublures.
 
-- [ ] 🧪 Critères CA-APP-01 à 09 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Critères CA-APP-01 à 09 relus et validés par l'équipe (colonne « Validé »)
 - [ ] 🧪 Tests d'acceptation écrits avec doublures écrites à la main ; scénarios : nominal, météo non couverte,
       préférences en panne, utilisateur inconnu, catalogue en panne, canal préféré en panne, tous les
       canaux en panne, rapport `degraded`, échouant pour la bonne raison, relus, commit
