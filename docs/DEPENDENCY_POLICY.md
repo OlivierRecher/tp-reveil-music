@@ -68,7 +68,8 @@ toute montée de version est un acte volontaire et revu.
 d'exploitabilité, date d'acceptation et **date d'expiration** (3 mois maximum). Après expiration, la CI
 échoue de nouveau et la décision doit être réévaluée.
 
-Exception en cours : GHSA-vfj7-8cjw-p6xm (`braces` via `awilix`), voir ADR-0003.
+Aucune exception en cours. La seule exception accordée (GHSA-vfj7-8cjw-p6xm, `braces` via `awilix`,
+ADR-0003) a disparu avec la dépendance qui l'apportait (ADR-0007).
 
 ## 6. Revue périodique
 

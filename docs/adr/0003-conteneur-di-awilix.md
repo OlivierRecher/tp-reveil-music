@@ -1,6 +1,6 @@
 # ADR-0003 — Conteneur d'injection de dépendances : awilix
 
-- Statut : Accepté (2026-10-08)
+- Statut : Remplacé par [ADR-0007](0007-injection-de-dependances-manuelle.md) (2026-10-08)
 
 ## Contexte
 

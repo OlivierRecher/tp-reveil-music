@@ -1,7 +1,7 @@
 // Script de démonstration : déclenche un réveil sans serveur HTTP (l'ordonnancement est hors
 // périmètre). Usage : npm run wake -- --user u1 --day LUNDI --weather PLUIE
 import { pino } from 'pino';
-import { buildContainer } from '../composition/container.ts';
+import { composeApplication } from '../composition/compositionRoot.ts';
 import { ConfigError } from '../config/ConfigError.ts';
 import { loadConfig } from '../config/env.ts';
 import { parseWakeArgs } from './parseWakeArgs.ts';
@@ -28,16 +28,16 @@ async function main(argv: ReadonlyArray<string>): Promise<number> {
 
   // Journal applicatif sur la sortie d'erreur : la sortie standard ne porte que la trace de l'envoi
   // simulé (FileNotificationLog, CA-NOT-02) et le rapport.
-  const container = buildContainer(config, {
+  const app = composeApplication(config, {
     pinoLogger: pino({ level: config.logLevel }, pino.destination(2)),
   });
   try {
-    const report = await container.resolve('triggerWakeUp').execute(command);
+    const report = await app.triggerWakeUp.execute(command);
     // `Track` se sérialise par son `toJSON`.
     console.log(JSON.stringify(report, null, 2));
     return 0;
   } finally {
-    await container.dispose();
+    await app.dispose();
   }
 }
 

@@ -1,11 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
-import type { AwilixContainer } from 'awilix';
 import type { FastifyInstance } from 'fastify';
 import { pino } from 'pino';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AppConfig } from '../../src/config/env.ts';
-import { buildContainer } from '../../src/composition/container.ts';
-import type { AppCradle } from '../../src/composition/container.ts';
+import { composeApplication } from '../../src/composition/compositionRoot.ts';
+import type { Application } from '../../src/composition/compositionRoot.ts';
 import { buildHttpServer } from '../../src/http/buildHttpServer.ts';
 import { HostRoutingFetch, ITUNES_HOST } from '../doubles/HostRoutingFetch.ts';
 import { MemoryStream } from '../doubles/MemoryStream.ts';
@@ -13,42 +12,42 @@ import { createTestWorkspace } from '../doubles/testConfig.ts';
 import type { TestWorkspace } from '../doubles/testConfig.ts';
 import { loadFixture } from '../doubles/loadFixture.ts';
 
-// Bout en bout sans réseau : vrai conteneur + vrai serveur Fastify, interrogé par `inject()`.
+// Bout en bout sans réseau : vraie composition root + vrai serveur Fastify, interrogé par `inject()`.
 // Seuls `fetch` (faux écrit à la main) et la sortie de pino (flux mémoire) sont remplacés.
 
 const PINO_WARN = 40;
 
-interface Application {
+interface StartedApi {
   readonly http: FastifyInstance;
   readonly fetch: HostRoutingFetch;
   readonly logs: MemoryStream;
 }
 
 let workspace: TestWorkspace;
-let container: AwilixContainer<AppCradle> | undefined;
+let app: Application | undefined;
 let http: FastifyInstance | undefined;
 
 beforeEach(() => {
   workspace = createTestWorkspace();
-  container = undefined;
+  app = undefined;
   http = undefined;
 });
 
 afterEach(async () => {
   await http?.close();
-  await container?.dispose();
+  await app?.dispose();
   workspace.cleanup();
 });
 
-function start(config: AppConfig, fetch: HostRoutingFetch): Application {
+function start(config: AppConfig, fetch: HostRoutingFetch): StartedApi {
   const logs = new MemoryStream();
-  container = buildContainer(config, {
+  app = composeApplication(config, {
     httpFetch: fetch.fetch,
     pinoLogger: pino({ level: 'debug' }, logs),
   });
   http = buildHttpServer({
-    triggerWakeUp: container.resolve('triggerWakeUp'),
-    logger: container.resolve('logger'),
+    triggerWakeUp: app.triggerWakeUp,
+    logger: app.logger,
   });
   return { http, fetch, logs };
 }

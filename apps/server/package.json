@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@reveil/core": "0.1.0",
-    "awilix": "13.0.5",
     "cockatiel": "4.0.0",
     "fastify": "5.12.5",
     "lru-cache": "11.5.3",

@@ -1,13 +1,4 @@
 {
   "$comment": "Exceptions d'audit acceptées en revue. Chaque entrée expire : passé la date, la CI échoue à nouveau et la décision doit être réévaluée.",
-  "exceptions": [
-    {
-      "advisory": "GHSA-vfj7-8cjw-p6xm",
-      "package": "braces",
-      "path": "awilix > fast-glob > micromatch > braces",
-      "reason": "DoS par motifs glob profondément imbriqués. fast-glob n'est utilisé que par awilix.loadModules(), que l'architecture n'appelle pas (enregistrement explicite dans la composition root) ; aucun motif ne provient d'une entrée utilisateur. Aucune version corrigée de braces n'existe. Voir ADR-0003.",
-      "acceptedOn": "2026-10-08",
-      "expiresOn": "2027-01-08"
-    }
-  ]
+  "exceptions": []
 }

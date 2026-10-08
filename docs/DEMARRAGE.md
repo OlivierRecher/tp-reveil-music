@@ -19,12 +19,8 @@ nvm use                 # facultatif, si nvm est installé
 npm install
 ```
 
-Deux avertissements de `npm install` sont **attendus** et sans conséquence :
+Un avertissement de `npm install` est **attendu** et sans conséquence :
 
-- `4 high severity vulnerabilities` : il s'agit de `braces`, via `fast-glob`, embarqué par awilix. C'est
-  une exception documentée et datée (non exploitable ici, voir [ADR-0003](adr/0003-conteneur-di-awilix.md)) ;
-  `npm run deps:audit` confirme qu'il n'y a rien de bloquant. **Ne pas lancer `npm audit fix --force`**,
-  qui changerait des versions majeures.
 - `install scripts blocked … fsevents` : npm bloque le script d'installation de ce paquet optionnel
   (macOS). Rien à autoriser, l'application fonctionne sans.
 

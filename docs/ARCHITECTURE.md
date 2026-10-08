@@ -14,7 +14,7 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 ┌───────────────────────────────── apps/server ─▼────────────────────────────────────────────┐
 │  http/ (adaptateur entrant Fastify + validation zod)                                         │
 │        │                                                                                     │
-│        ▼  résolu par le conteneur                                                            │
+│        ▼  assemblé par la composition root                                                   │
 │  ┌─────────────────────── packages/core (@reveil/core) ───────────────────────┐              │
 │  │ application/                                                               │              │
 │  │   TriggerWakeUp (cas d'usage) ──► NotificationDispatcher                   │              │
@@ -36,8 +36,8 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │                 adaptateurs : Email/Sms/PushChannelAdapter · LogChannel (dernier recours)    │
 │                 FileNotificationLog (journal des envois simulés : fichier + console)         │
 │   logging/      PinoLogger                                                                   │
-│  composition/container.ts  ← SEUL endroit qui connaît les classes concrètes (awilix)         │
-│  cli/wake.ts               ← script de démonstration (même conteneur, sans HTTP)             │
+│  composition/compositionRoot.ts ← SEUL endroit qui connaît les classes concrètes             │
+│  cli/wake.ts                    ← démonstration (même composition root, sans HTTP)           │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -102,7 +102,7 @@ interface Logger {
 }
 ```
 
-Services applicatifs (classes du noyau, injectées par awilix) :
+Services applicatifs (classes du noyau, construites et injectées par la composition root) :
 
 ```ts
 class NotificationDispatcher {
@@ -134,8 +134,9 @@ aucun appel musical ni aucun envoi. Ils ne connaissent que `@reveil/core` et la 
   par `node:util` `parseArgs` (strict), rapport JSON sur la sortie standard (après la trace de l'envoi simulé), journal pino sur la sortie
   d'erreur, code de sortie `1` si la saisie ou la configuration est invalide.
 
-`main.ts` charge la configuration (échec explicite si invalide), construit le conteneur et le serveur,
-et sur `SIGINT`/`SIGTERM` ferme le serveur puis appelle `container.dispose()` (vidage du journal pino).
+`main.ts` charge la configuration (échec explicite si invalide), assemble l'application
+(`composeApplication`) et le serveur, et sur `SIGINT`/`SIGTERM` ferme le serveur puis appelle
+`dispose()` (vidage du journal pino).
 `SIMULATED_FAILURES` est lu par la composition root uniquement : elle substitue le mock en panne
 (préférences, canaux) ou un `fetch` qui rejette (fournisseurs musicaux), sans toucher au métier.
 
@@ -144,17 +145,18 @@ et sur `SIGINT`/`SIGTERM` ferme le serveur puis appelle `container.dispose()` (v
 | Pattern                               | Où                                                                          | Problème métier résolu                                                                                |
 | ------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **Ports & Adapters** (hexagonal)      | partout                                                                     | changer de fournisseur ou de canal sans toucher au métier                                             |
-| **Dependency Injection / IoC**        | `composition/container.ts` (awilix)                                         | exigence « aucun `new` d'implémentation concrète »                                                    |
+| **Dependency Injection / IoC**        | `composition/compositionRoot.ts` (Composition Root, DI manuelle, ADR-0007)  | exigence « aucun `new` d'implémentation concrète » hors de la composition root                        |
 | **Adapter**                           | `ItunesMusicProvider`, `MusicBrainzMusicProvider`                           | traduire chaque API vers `Track` (anti-corruption layer + zod)                                        |
 | **Adapter**                           | `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter`            | ramener 3 mocks aux interfaces différentes vers `NotificationChannel`                                 |
 | **Decorator**                         | `CachedMusicProvider`, `RateLimitedMusicProvider`, `ResilientMusicProvider` | ajouter cache / quota 20 req/min (échec immédiat, ADR-0006) / timeout sans modifier les fournisseurs  |
 | **Chain of Responsibility**           | `FallbackMusicCatalog`, `NotificationDispatcher`                            | mode dégradé : essayer le suivant quand un maillon échoue                                             |
 | **Strategy**                          | `TrackSelectionPolicy` ; choix du canal par `ChannelType`                   | règles de sélection isolées et testables                                                              |
-| **Registry** (+ Factory du conteneur) | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 valeur de `ChannelType` + 1 ligne d'enregistrement |
+| **Registry** (+ Factory)              | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 valeur de `ChannelType` + 1 ligne d'enregistrement |
 | **Circuit Breaker / Retry / Timeout** | `ResilientMusicProvider` (cockatiel)                                        | ne pas attendre un fournisseur en panne à l'heure du réveil                                           |
 | **Value Object / Factory method**     | `Track.create`, `UserId.parse`, `WakeUpMessage.compose`                     | invariants garantis, pas d'objet invalide dans le domaine                                             |
 
-Patterns volontairement **non** retenus : Singleton « à la main » (le conteneur gère les cycles de vie),
+Patterns volontairement **non** retenus : Singleton « à la main » (la composition root construit chaque
+composant une seule fois), conteneur DI (aucun scope ni cycle de vie à gérer, ADR-0007),
 Observer/EventBus (un seul consommateur, ce serait de la complexité gratuite), Repository générique.
 
 ## 5. Traçabilité des exigences
@@ -173,7 +175,7 @@ Vue de synthèse. Le détail testable (un ID `CA-…` par comportement attendu) 
 | MusicBrainz exige un User-Agent                       | en-tête fourni par la config `MUSICBRAINZ_USER_AGENT`, vérifié au démarrage (zod)                                 | test de l'adaptateur                          |
 | `trackViewUrl` ne fuit pas dans le métier             | traduction en `Track.link` dans l'adaptateur ; core sans dépendance                                               | `arch:check` + test                           |
 | Isolation, faible couplage                            | règles dependency-cruiser                                                                                         | `arch:check`                                  |
-| Aucun `new` d'implémentation                          | awilix + règle ESLint `no-restricted-syntax`                                                                      | `lint`                                        |
+| Aucun `new` d'implémentation                          | `new` confinés à la composition root (ADR-0007) + règle ESLint `no-restricted-syntax`                             | `lint`                                        |
 | Tests unitaires, bonne couverture                     | vitest + seuils 90/85 %                                                                                           | `test:coverage`                               |
 
 ## 6. Hypothèses (à valider avec l'enseignant si besoin)

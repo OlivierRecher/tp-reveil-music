@@ -52,7 +52,7 @@ packages/core/          @reveil/core : domaine + application. ZÉRO dépendance 
   src/application/      ports (interfaces) + cas d'usage (TriggerWakeUp) + NotificationDispatcher
   src/index.ts          API publique, seul point d'import autorisé
 apps/server/            @reveil/server : adaptateurs, composition root, API HTTP
-  src/composition/      container.ts : SEUL endroit où les implémentations concrètes sont connues
+  src/composition/      compositionRoot.ts : SEUL endroit où les implémentations concrètes sont connues
   src/config/           lecture/validation de l'environnement (zod)
   src/http/             adaptateur entrant Fastify (POST /api/wake-ups, GET /health)
   src/cli/              adaptateur entrant CLI de démonstration (npm run wake)
@@ -67,8 +67,8 @@ apps/web/               @reveil/web : client PWA (vanilla TS + Vite), ne parle q
    `artist-credit`…) ne sortent jamais de leur adaptateur : ils sont validés (zod) puis traduits en
    objets du domaine (anti-corruption layer).
 2. **Aucun `new` sur une implémentation concrète** hors de `apps/server/src/composition/`.
-   Tout passe par le conteneur awilix. La règle ESLint `no-restricted-syntax` bloque `new XxxProvider()`,
-   `new XxxAdapter()`, etc. Restent autorisés : `new Error`/sous-classes d'erreur, `new Map`, `new Date`,
+   Tout est construit et câblé dans la composition root (DI manuelle, ADR-0007). La règle ESLint
+   `no-restricted-syntax` bloque `new XxxProvider()`, `new XxxAdapter()`, etc. Restent autorisés : `new Error`/sous-classes d'erreur, `new Map`, `new Date`,
    `new URL`, et les value objects via leurs fabriques statiques.
 3. **Dépendre d'abstractions** : les cas d'usage reçoivent des ports (interfaces de `application/ports`).
 4. **Jamais de silence** : toute panne (préférences, musique, canal) mène à un mode dégradé journalisé,
@@ -90,9 +90,12 @@ apps/web/               @reveil/web : client PWA (vanilla TS + Vite), ne parle q
 - Données immuables (`readonly`, `ReadonlyArray`) ; pas de `any` ; pas d'assertion `!` non justifiée.
 - Un fichier = une classe/un concept, nommé comme lui (`ItunesMusicProvider.ts`).
 
-## Injection de dépendances (awilix)
+## Injection de dépendances (manuelle, ADR-0007)
 
-- Mode `InjectionMode.PROXY` : chaque classe reçoit un objet de dépendances typé.
+- Pas de conteneur : `composeApplication()` (`composition/compositionRoot.ts`) construit chaque
+  composant **une seule fois**, dans l'ordre de ses dépendances (Pure DI). Le câblage est vérifié par
+  `tsc` : une dépendance oubliée est une erreur de compilation.
+- Chaque classe reçoit un objet de dépendances typé :
 
   ```ts
   interface Deps {
@@ -107,11 +110,12 @@ apps/web/               @reveil/web : client PWA (vanilla TS + Vite), ne parle q
   }
   ```
 
-- Enregistrement **explicite** dans `container.ts` (`asClass(...).singleton()`, `asFunction`, `asValue`).
-  **Ne jamais utiliser `loadModules()`** : c'est la condition de l'exception d'audit
-  GHSA-vfj7-8cjw-p6xm (voir `audit-exceptions.json` et ADR-0003).
-- Changer de fournisseur ou de canal = modifier la configuration (`MUSIC_PROVIDERS`) ou une ligne du
-  conteneur, jamais le code métier.
+- Ajouter un composant = le construire dans la composition root et le passer aux constructeurs qui en
+  ont besoin. Les entrées (`main.ts`, `cli/wake.ts`) et les tests lisent `app.triggerWakeUp`, etc.
+- Pas de conteneur DI tant qu'il n'y a ni scope (instance par requête) ni cycle de vie à gérer : le
+  réintroduire demanderait un nouvel ADR (awilix a été retiré, voir ADR-0003 et ADR-0007).
+- Changer de fournisseur ou de canal = modifier la configuration (`MUSIC_PROVIDERS`) ou une ligne de la
+  composition root, jamais le code métier.
 
 ## Dépendances : procédure obligatoire
 
