@@ -10,7 +10,7 @@ TP IMT S5, cours de **gestion des dépendances**. Énoncé : [`TP_reveil_musical
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | installer, lancer et tester pas à pas     | [`docs/DEMARRAGE.md`](docs/DEMARRAGE.md)                                                       |
 | comprendre l'architecture et les patterns | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                                 |
-| connaître les décisions et leurs raisons  | [`docs/adr/`](docs/adr/README.md) (ADR-0001 à 0006)                                            |
+| connaître les décisions et leurs raisons  | [`docs/adr/`](docs/adr/README.md) (ADR-0001 à 0007)                                            |
 | ajouter une dépendance                    | [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md)                                       |
 | savoir ce que les tests prouvent          | [`docs/ACCEPTANCE_CRITERIA.md`](docs/ACCEPTANCE_CRITERIA.md), [`docs/TESTS.md`](docs/TESTS.md) |
 | suivre l'avancement                       | [`docs/PLAN.md`](docs/PLAN.md)                                                                 |
@@ -66,27 +66,27 @@ apps/web (PWA) ── HTTP ──► apps/server
                            │        ▲ implémentent ses ports
                            │        │
                            ├─ infrastructure/      iTunes, MusicBrainz, local, canaux, logs
-                           └─ composition/         seul endroit qui connaît les classes concrètes (awilix)
+                           └─ composition/         seul endroit qui connaît les classes concrètes (DI manuelle)
 ```
 
-| Workspace       | Rôle                                                                         | Dépendances runtime                              |
-| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
-| `packages/core` | domaine, ports, cas d'usage `TriggerWakeUp`, `NotificationDispatcher`        | **aucune** (vérifié par dependency-cruiser)      |
-| `apps/server`   | adaptateurs iTunes / MusicBrainz / local, mocks de notification, API Fastify | awilix, fastify, zod, cockatiel, lru-cache, pino |
-| `apps/web`      | client PWA de démonstration (formulaire, rapport, mode dégradé, hors ligne)  | zod (`zod/mini`)                                 |
+| Workspace       | Rôle                                                                         | Dépendances runtime                         |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------- |
+| `packages/core` | domaine, ports, cas d'usage `TriggerWakeUp`, `NotificationDispatcher`        | **aucune** (vérifié par dependency-cruiser) |
+| `apps/server`   | adaptateurs iTunes / MusicBrainz / local, mocks de notification, API Fastify | fastify, zod, cockatiel, lru-cache, pino    |
+| `apps/web`      | client PWA de démonstration (formulaire, rapport, mode dégradé, hors ligne)  | zod (`zod/mini`)                            |
 
 Patterns : Adapter (anti-corruption des API), Decorator (cache, quota, résilience), Chain of
 Responsibility (fallbacks), Strategy (sélection), Registry (canaux), injection de dépendances. Changer de
 fournisseur musical = modifier `MUSIC_PROVIDERS` ; ajouter un canal = un adaptateur et une ligne
-d'enregistrement. Détails, flux complet et traçabilité des exigences :
+dans la composition root. Détails, flux complet et traçabilité des exigences :
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Qualité et tests
 
 Les tests sont écrits **avant** le code, à partir de 49 critères d'acceptation tirés de l'énoncé
-(`[CA-APP-03] envoie un morceau local quand le catalogue est en panne`…). 477 tests Vitest, sans aucun
+(`[CA-APP-03] envoie un morceau local quand le catalogue est en panne`…). 475 tests Vitest, sans aucun
 accès réseau (le `fetch` est injecté, les réponses réelles d'iTunes et MusicBrainz sont des fixtures).
-Couverture : **99,6 % lignes, 96,7 % branches** (seuils bloquants 90 / 85 %). La CI GitHub Actions
+Couverture : **99,8 % lignes, 96,8 % branches** (seuils bloquants 90 / 85 %). La CI GitHub Actions
 rejoue `npm run verify` à chaque PR. Détails et branches non couvertes justifiées :
 [`docs/TESTS.md`](docs/TESTS.md).
 
@@ -103,25 +103,24 @@ La question n'est pas « existe-t-il un paquet ? », mais « le problème justif
 dépendance ? » (licence à suivre, mises à jour, surface d'attaque, dépendances transitives). Grille
 appliquée ([`DEPENDENCY_POLICY.md` § 1](docs/DEPENDENCY_POLICY.md#1-faut-il-une-dépendance-)) :
 
-| Situation                                | Décision                  | Exemples dans le projet                                                                        |
-| ---------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------- |
-| la plateforme le fait déjà               | **pas de dépendance**     | `fetch` natif (pas d'axios), TypeScript exécuté par Node (pas de tsx), `node:util.parseArgs`   |
-| quelques lignes sans piège               | **pas de dépendance**     | quota à fenêtre glissante ([ADR-0006](docs/adr/0006-quota-sans-p-throttle.md)), script d'audit |
-| problème connu et piégeux                | **bibliothèque éprouvée** | cache LRU/TTL, circuit breaker, validation de schéma, conteneur DI, serveur HTTP, logs         |
-| besoin limité aux tests ou à l'outillage | **devDependency**         | Vitest, ESLint, Vite, dependency-cruiser                                                       |
-| code métier                              | **jamais**                | `packages/core` n'a aucune dépendance : le métier survit à tout changement de bibliothèque     |
+| Situation                                | Décision                  | Exemples dans le projet                                                                                                                                                                  |
+| ---------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| la plateforme le fait déjà               | **pas de dépendance**     | `fetch` natif (pas d'axios), TypeScript exécuté par Node (pas de tsx), `node:util.parseArgs`                                                                                             |
+| quelques lignes sans piège               | **pas de dépendance**     | quota à fenêtre glissante ([ADR-0006](docs/adr/0006-quota-sans-p-throttle.md)), câblage des dépendances ([ADR-0007](docs/adr/0007-injection-de-dependances-manuelle.md)), script d'audit |
+| problème connu et piégeux                | **bibliothèque éprouvée** | cache LRU/TTL, circuit breaker, validation de schéma, serveur HTTP, logs                                                                                                                 |
+| besoin limité aux tests ou à l'outillage | **devDependency**         | Vitest, ESLint, Vite, dependency-cruiser                                                                                                                                                 |
+| code métier                              | **jamais**                | `packages/core` n'a aucune dépendance : le métier survit à tout changement de bibliothèque                                                                                               |
 
-Résultat : **6 dépendances de production** côté serveur, 1 côté web, chacune répondant à un besoin
+Résultat : **5 dépendances de production** côté serveur, 1 côté web, chacune répondant à un besoin
 précis :
 
-| Besoin (exigence)                                                       | Choix         | Pourquoi celle-ci                                                                                    |
-| ----------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
-| aucun `new` d'implémentation concrète hors composition root             | **awilix**    | IoC sans décorateurs, compatible avec l'exécution native de TypeScript (InversifyJS, tsyringe : non) |
-| exposer le cas d'usage en HTTP                                          | **fastify**   | performant, très maintenu, journalisation pino intégrée                                              |
-| ne jamais laisser une donnée externe non vérifiée entrer dans le métier | **zod**       | zéro dépendance, typage inféré ; `zod/mini` côté web divise le bundle par 4                          |
-| ne pas attendre un fournisseur en panne à l'heure du réveil             | **cockatiel** | timeout + circuit breaker en une bibliothèque sans dépendance (opossum : valable, mais plus lourd)   |
-| iTunes limité à ~20 req/min                                             | **lru-cache** | cache avec TTL de référence ; évite de rappeler l'API pour un même morceau                           |
-| journaliser chaque bascule en mode dégradé                              | **pino**      | logs structurés JSON ; déjà présent via Fastify, donc aucune bibliothèque de plus                    |
+| Besoin (exigence)                                                       | Choix         | Pourquoi celle-ci                                                                                  |
+| ----------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------- |
+| exposer le cas d'usage en HTTP                                          | **fastify**   | performant, très maintenu, journalisation pino intégrée                                            |
+| ne jamais laisser une donnée externe non vérifiée entrer dans le métier | **zod**       | zéro dépendance, typage inféré ; `zod/mini` côté web divise le bundle par 4                        |
+| ne pas attendre un fournisseur en panne à l'heure du réveil             | **cockatiel** | timeout + circuit breaker en une bibliothèque sans dépendance (opossum : valable, mais plus lourd) |
+| iTunes limité à ~20 req/min                                             | **lru-cache** | cache avec TTL de référence ; évite de rappeler l'API pour un même morceau                         |
+| journaliser chaque bascule en mode dégradé                              | **pino**      | logs structurés JSON ; déjà présent via Fastify, donc aucune bibliothèque de plus                  |
 
 ### 2. Vérifier avant d'installer
 
@@ -166,13 +165,15 @@ MPL-2.0 est acceptée dans Vite, pas dans ce qui est livré.
 
 Les règles ont été confrontées à de vraies situations, chacune tracée :
 
-- **Exception d'audit datée** — `npm install` signale 4 vulnérabilités _high_ : `braces` (DoS sur des
-  motifs glob), embarqué par awilix via `fast-glob`. Aucune version corrigée n'existe. Analyse : ce code
-  n'est atteint que par `awilix.loadModules()`, que l'architecture n'appelle jamais (enregistrement
-  explicite, règle inscrite dans `CLAUDE.md`). L'exception est acceptée dans
-  [`audit-exceptions.json`](audit-exceptions.json) avec une **date d'expiration** (2027-01-08) : passé
-  cette date, la CI échoue et la décision doit être réévaluée.
-  [ADR-0003](docs/adr/0003-conteneur-di-awilix.md). Ne pas lancer `npm audit fix --force`.
+- **Dépendance remise en question une fois le projet fini** — le conteneur DI awilix avait été retenu
+  pour respecter « aucun `new` d'implémentation » (InversifyJS et tsyringe exigent des décorateurs,
+  impossibles avec l'exécution native de TypeScript). Il embarquait `braces` via `fast-glob`, une faille
+  _high_ sans correctif, acceptée par une exception d'audit datée car seul `loadModules()`, jamais
+  appelé, l'atteignait. Bilan à la v1.0.0 : 37 enregistrements, tous singletons, dont une partie déjà
+  câblée à la main. Le conteneur n'apportait rien qu'une fonction de câblage ne fasse : il est remplacé
+  par une injection manuelle (Pure DI), vérifiée par `tsc`, avec 15 paquets et l'exception d'audit en
+  moins. Les `new` restent confinés à la composition root, ce que le lint vérifie toujours.
+  [ADR-0003](docs/adr/0003-conteneur-di-awilix.md) → [ADR-0007](docs/adr/0007-injection-de-dependances-manuelle.md).
 - **Dernière version non retenue** — TypeScript 7 est sorti, mais typescript-eslint exige `<6.1.0` :
   le projet reste volontairement en 6.0.3, et documente pourquoi.
   [ADR-0005](docs/adr/0005-outillage-et-execution-typescript.md).
@@ -196,14 +197,13 @@ Fraîcheur : 🟢 moins de 12 mois · 🟠 12 à 24 mois · 🔴 plus de 24 mois
 
 #### Production (`apps/server`, `apps/web`)
 
-| Package   | Rôle                                                         | Licence       | Version installée | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                                                                                           |
-| --------- | ------------------------------------------------------------ | ------------- | ----------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| awilix    | Conteneur IoC / DI                                           | MIT           | 13.0.5            | 13.0.5 (2026-06-15)    | 🟢        | Sans décorateurs. ⚠️ Exception d'audit GHSA-vfj7-8cjw-p6xm via `fast-glob`, non exploitable (`loadModules` jamais appelé), expire le 2027-01-08 : [ADR-0003](docs/adr/0003-conteneur-di-awilix.md) |
-| fastify   | API HTTP (adaptateur entrant)                                | MIT           | 5.12.5            | 5.12.5 (2026-09-16)    | 🟢        |                                                                                                                                                                                                    |
-| zod       | Validation (env, requêtes, réponses d'API) — **server, web** | MIT           | 4.6.5             | 4.6.5 (2026-09-13)     | 🟢        | Zéro dépendance. Côté web, import `zod/mini` (tree-shakable) : bundle JS 20 kB (7 kB gzip) contre 83 kB (25 kB gzip) avec `zod`, l'API suffit au schéma du rapport                                 |
-| cockatiel | Timeout + circuit breaker                                    | MIT           | 4.0.0             | 4.0.0 (2026-05-26)     | 🟢        | Zéro dépendance                                                                                                                                                                                    |
-| lru-cache | Cache des recherches musicales (TTL)                         | BlueOak-1.0.0 | 11.5.3            | 11.5.3 (2026-09-18)    | 🟢        | Licence peu courante mais **permissive** (approuvée OSI, sans copyleft, clause de brevets) : autorisée par la politique                                                                            |
-| pino      | Logs structurés                                              | MIT           | 10.4.0            | 10.4.0 (2026-10-02)    | 🟢        | Déjà embarqué par Fastify : une seule bibliothèque de logs                                                                                                                                         |
+| Package   | Rôle                                                         | Licence       | Version installée | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                                                           |
+| --------- | ------------------------------------------------------------ | ------------- | ----------------- | ---------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| fastify   | API HTTP (adaptateur entrant)                                | MIT           | 5.12.5            | 5.12.5 (2026-09-16)    | 🟢        |                                                                                                                                                                    |
+| zod       | Validation (env, requêtes, réponses d'API) — **server, web** | MIT           | 4.6.5             | 4.6.5 (2026-09-13)     | 🟢        | Zéro dépendance. Côté web, import `zod/mini` (tree-shakable) : bundle JS 20 kB (7 kB gzip) contre 83 kB (25 kB gzip) avec `zod`, l'API suffit au schéma du rapport |
+| cockatiel | Timeout + circuit breaker                                    | MIT           | 4.0.0             | 4.0.0 (2026-05-26)     | 🟢        | Zéro dépendance                                                                                                                                                    |
+| lru-cache | Cache des recherches musicales (TTL)                         | BlueOak-1.0.0 | 11.5.3            | 11.5.3 (2026-09-18)    | 🟢        | Licence peu courante mais **permissive** (approuvée OSI, sans copyleft, clause de brevets) : autorisée par la politique                                            |
+| pino      | Logs structurés                                              | MIT           | 10.4.0            | 10.4.0 (2026-10-02)    | 🟢        | Déjà embarqué par Fastify : une seule bibliothèque de logs                                                                                                         |
 
 `packages/core` : **aucune dépendance**, par construction (vérifié par dependency-cruiser).
 

@@ -128,7 +128,8 @@ Implémentation :
 Implémentation :
 
 - [x] `composition/container.ts` : enregistrement awilix explicite (pas de `loadModules`), chaîne
-      musicale construite selon `MUSIC_PROVIDERS`, registre des canaux
+      musicale construite selon `MUSIC_PROVIDERS`, registre des canaux — remplacé après la v1.0.0 par
+      `composition/compositionRoot.ts` (DI manuelle, ADR-0007)
 - [x] `http/` : serveur Fastify, `POST /api/wake-ups` (validation zod → 400 si invalide), `GET /health`,
       gestion d'erreurs centralisée
 - [x] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
@@ -180,6 +181,17 @@ Implémentation :
       canal = adaptateur + valeur de `ChannelType` + enregistrement) ; points restants à arbitrer par l'équipe
 - [x] Tag `v1.0.0`
 
+## Après la v1.0.0 — Injection de dépendances manuelle (ADR-0007)
+
+- [x] Bilan d'awilix : 37 enregistrements, tous singletons, une partie déjà câblée à la main ; seul
+      apport réel = une exception d'audit (GHSA-vfj7-8cjw-p6xm) à renouveler
+- [x] ADR-0007 (remplace ADR-0003) ; CA-CMP-01 reformulé (« assemblées par la composition root »)
+- [x] Tests CA-CMP-01 adaptés en commit séparé (rouge) ; tests « singleton » et « pas de
+      `loadModules` » retirés, leur objet disparaissant avec awilix
+- [x] `composeApplication()` remplace `buildContainer()` ; awilix désinstallé (15 paquets en moins),
+      exception d'audit et règles ESLint anti-`loadModules` retirées
+- [x] Documentation alignée (README, ARCHITECTURE, CLAUDE.md, DEPENDENCY_POLICY, DEMARRAGE, TESTS)
+
 ---
 
 ## Risques identifiés
@@ -190,7 +202,6 @@ Implémentation :
 | Quota iTunes dépassé en développement                                             | cache + rate limit ; fixtures en test                                                                                                |
 | MusicBrainz rejette les requêtes sans User-Agent                                  | variable obligatoire validée au démarrage                                                                                            |
 | Dérive des versions ou nouvelle vulnérabilité avant le rendu                      | versions figées + lockfile ; CI avec audit ; revue périodique (DEPENDENCY_POLICY §6)                                                 |
-| Exception d'audit awilix expirée (2027-01-08)                                     | réévaluation planifiée ; remplacement possible du conteneur grâce à l'objet `Deps`                                                   |
 | Contournement involontaire de l'IoC                                               | règle ESLint + règles dependency-cruiser en CI                                                                                       |
 | Tests écrits pour valider le code produit (par l'IA ou non) au lieu des exigences | tests écrits avant le code à partir des critères `CA-…`, relus, commit rouge séparé, modification interdite pendant l'implémentation |
 | Ambiguïté sur le rôle du jour de la semaine                                       | hypothèse documentée (ARCHITECTURE §6), point d'extension `TrackSelectionPolicy`                                                     |
