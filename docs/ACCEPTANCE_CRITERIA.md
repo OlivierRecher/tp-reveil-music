@@ -46,6 +46,11 @@ Sources : **É** = énoncé · **ADR-n** · **H** = hypothèse (ARCHITECTURE §6
 | CA-APP-08 | Toute bascule en mode dégradé est journalisée au niveau `warn`                                                                                                | ADR-0004                      | [x]    |
 | CA-APP-09 | Un canal n'est tenté que si l'utilisateur possède la coordonnée correspondante                                                                                | H                             | [x]    |
 
+Précision (décision d'équipe, 2026-10-08) : le rapport est `degraded: true` dès qu'une bascule a eu
+lieu, c'est-à-dire préférences par défaut, morceau de source locale (renvoyé par le catalogue ou tiré
+de `EmergencyPlaylist`), ou livraison sur un autre canal que le préféré. Un morceau de secours choisi
+par l'utilisateur pour une météo non couverte est un fonctionnement **normal** (`degraded: false`).
+
 ## Phase 3 — Adaptateurs
 
 ### Musique
