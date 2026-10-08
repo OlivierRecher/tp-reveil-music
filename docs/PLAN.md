@@ -141,7 +141,7 @@ Implémentation :
 ## Phase 5 — Client PWA (`apps/web`)
 
 - [x] 🧪 Rédiger les critères `CA-WEB-…` dans `docs/ACCEPTANCE_CRITERIA.md` et les faire valider
-- [ ] 🧪 Tests rouges des critères comportant de la logique (appel API, rendu du rapport, erreurs réseau)
+- [x] 🧪 Tests rouges des critères comportant de la logique (appel API, rendu du rapport, erreurs réseau)
 
 Implémentation :
 
