@@ -7,7 +7,7 @@ import { PushChannelAdapter } from '../../../../src/infrastructure/notification/
 import { SmsChannelAdapter } from '../../../../src/infrastructure/notification/SmsChannelAdapter.ts';
 import { FakePushService } from '../../../../src/infrastructure/notification/vendors/FakePushService.ts';
 import { FakeSmsGateway } from '../../../../src/infrastructure/notification/vendors/FakeSmsGateway.ts';
-import type { SmsResult } from '../../../../src/infrastructure/notification/vendors/FakeSmsGateway.ts';
+import type { SmsResult } from '../../../../src/infrastructure/notification/SmsGateway.ts';
 import { RecordingLogger } from '../../../doubles/RecordingLogger.ts';
 import { captureRejection } from '../doubles/captureRejection.ts';
 import { MESSAGE, recipient } from '../doubles/fixtures.ts';

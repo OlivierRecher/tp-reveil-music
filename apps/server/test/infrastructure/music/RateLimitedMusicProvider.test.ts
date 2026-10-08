@@ -25,7 +25,7 @@ async function consumeBudget(
   provider: RateLimitedMusicProvider | FallbackMusicCatalog,
 ): Promise<void> {
   for (let index = 0; index < MAX_REQUESTS; index += 1) {
-    const settled = observe(provider.resolve(QUERY));
+    const settled = observe<unknown>(provider.resolve(QUERY));
     await flush();
     expect(settled().status, `appel n° ${String(index + 1)} dans le budget`).toBe('fulfilled');
   }
