@@ -76,7 +76,7 @@ Chaque sous-phase (3b, 3c, 3d) suit le même ordre : critères validés → test
 
 ### 3b. Préférences (mock du service interne)
 
-- [ ] 🧪 Critères CA-PRF-01 et 02 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Critères CA-PRF-01 et 02 relus et validés par l'équipe (colonne « Validé »)
 - [ ] 🧪 Tests d'acceptation écrits, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 - [ ] `InMemoryUserPreferencesProvider` + jeu de données (≥ 4 utilisateurs couvrant chaque canal,
@@ -84,7 +84,7 @@ Chaque sous-phase (3b, 3c, 3d) suit le même ordre : critères validés → test
 
 ### 3c. Musique 🎯
 
-- [ ] 🧪 Critères CA-MUS-01 à 12 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Critères CA-MUS-01 à 12 relus et validés par l'équipe (colonne « Validé »)
 - [ ] 🧪 Tests d'acceptation écrits : fixtures JSON réelles (une capture iTunes et une MusicBrainz),
       réponses vides ou malformées, HTTP 503, timeout, cache, quota (fake timers), circuit ouvert, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
@@ -103,7 +103,7 @@ Implémentation :
 
 ### 3d. Notifications 🎯
 
-- [ ] 🧪 Critères CA-NOT-01 à 05 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Critères CA-NOT-01 à 05 relus et validés par l'équipe (colonne « Validé »)
 - [ ] 🧪 Tests d'acceptation écrits : succès, statut rejeté, erreur, callback en erreur, coordonnée absente, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
