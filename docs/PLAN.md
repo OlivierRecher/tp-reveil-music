@@ -23,11 +23,11 @@ viennent de `docs/ACCEPTANCE_CRITERIA.md`, jamais du code (déroulé complet dan
       expirables, CI GitHub Actions
 - [x] Documentation : CLAUDE.md, ARCHITECTURE, DEPENDENCY_POLICY, ADR, PLAN, README
 - [x] Critères d'acceptation des phases 1 à 4 rédigés (`docs/ACCEPTANCE_CRITERIA.md`)
-- [ ] Premier commit d'initialisation + création du dépôt distant
+- [x] Premier commit d’initialisation + création du dépôt distant
 
 ## Phase 1 — Domaine (`packages/core/src/domain`)
 
-- [ ] 🧪 Critères CA-DOM-01 à 08 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Critères CA-DOM-01 à 08 relus et validés par l'équipe (colonne « Validé »)
 - [ ] 🧪 Tests d'acceptation écrits (tests paramétrés sur les 4 météos et 7 jours, entrées
       invalides), échouant pour la bonne raison, relus, commit `test(…): … (rouge)`
 

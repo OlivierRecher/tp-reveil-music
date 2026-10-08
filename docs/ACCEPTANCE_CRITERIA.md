@@ -23,14 +23,14 @@ Sources : **É** = énoncé · **ADR-n** · **H** = hypothèse (ARCHITECTURE §6
 
 | ID        | Critère                                                                                                                                                    | Source                                             | Validé |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------ |
-| CA-DOM-01 | Les seuls types de météo acceptés sont `SOLEIL`, `PLUIE`, `NEIGE`, `NUAGEUX` ; toute autre valeur est rejetée                                              | É « Point d'entrée »                               | [ ]    |
-| CA-DOM-02 | Les seuls jours acceptés sont `LUNDI` … `DIMANCHE` ; toute autre valeur est rejetée                                                                        | É, H                                               | [ ]    |
-| CA-DOM-03 | Un identifiant utilisateur vide ou composé d'espaces est rejeté                                                                                            | É                                                  | [ ]    |
-| CA-DOM-04 | Si l'utilisateur a un morceau pour la météo du jour, c'est ce morceau qui est demandé                                                                      | É « Point d'entrée »                               | [ ]    |
-| CA-DOM-05 | Si la météo du jour n'est pas couverte par ses préférences, le morceau de secours de l'utilisateur est demandé                                             | É « morceau de secours pour les cas non couverts » | [ ]    |
-| CA-DOM-06 | Pour chacune des 4 météos, CA-DOM-04 et CA-DOM-05 sont vérifiés (tests paramétrés)                                                                         | É                                                  | [ ]    |
-| CA-DOM-07 | Un morceau du domaine a un titre et un artiste non vides ; aucun champ propre à un fournisseur (`trackViewUrl`, `artist-credit`…) n'existe dans le domaine | É « ne doit pas fuiter dans le métier »            | [ ]    |
-| CA-DOM-08 | Le message de réveil contient le titre, l'artiste, le jour et la météo                                                                                     | É, H                                               | [ ]    |
+| CA-DOM-01 | Les seuls types de météo acceptés sont `SOLEIL`, `PLUIE`, `NEIGE`, `NUAGEUX` ; toute autre valeur est rejetée                                              | É « Point d'entrée »                               | [x]    |
+| CA-DOM-02 | Les seuls jours acceptés sont `LUNDI` … `DIMANCHE` ; toute autre valeur est rejetée                                                                        | É, H                                               | [x]    |
+| CA-DOM-03 | Un identifiant utilisateur vide ou composé d'espaces est rejeté                                                                                            | É                                                  | [x]    |
+| CA-DOM-04 | Si l'utilisateur a un morceau pour la météo du jour, c'est ce morceau qui est demandé                                                                      | É « Point d'entrée »                               | [x]    |
+| CA-DOM-05 | Si la météo du jour n'est pas couverte par ses préférences, le morceau de secours de l'utilisateur est demandé                                             | É « morceau de secours pour les cas non couverts » | [x]    |
+| CA-DOM-06 | Pour chacune des 4 météos, CA-DOM-04 et CA-DOM-05 sont vérifiés (tests paramétrés)                                                                         | É                                                  | [x]    |
+| CA-DOM-07 | Un morceau du domaine a un titre et un artiste non vides ; aucun champ propre à un fournisseur (`trackViewUrl`, `artist-credit`…) n'existe dans le domaine | É « ne doit pas fuiter dans le métier »            | [x]    |
+| CA-DOM-08 | Le message de réveil contient le titre, l'artiste, le jour et la météo                                                                                     | É, H                                               | [x]    |
 
 ## Phase 2 — Application (cas d'usage `TriggerWakeUp`)
 
