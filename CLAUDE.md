@@ -20,7 +20,10 @@ Documents de référence :
 - `docs/ARCHITECTURE.md` : couches, ports, flux, patterns, traçabilité des exigences.
 - `docs/DEPENDENCY_POLICY.md` : procédure obligatoire avant d'ajouter une dépendance.
 - `docs/adr/` : décisions d'architecture (ADR). Toute décision structurante y est consignée.
-- `README.md` : inventaire des dépendances (licence, version, fraîcheur, justification).
+- `README.md` : présentation synthétique et gestion des dépendances (démarche, contrôles, inventaire :
+  licence, version, fraîcheur, justification).
+- `docs/DEMARRAGE.md` : installation, lancement et test pas à pas ; `docs/TESTS.md` : couverture et
+  branches non couvertes justifiées.
 
 ## Commandes
 

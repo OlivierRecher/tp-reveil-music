@@ -163,7 +163,7 @@ Implémentation :
       critères DOM/APP/MUS/NOT/PRF/CMP/WEB (CA-WEB-07/08 ajoutés en phase 6) ; ARC/DEP vérifiés par
       l'outillage
 - [x] Couverture ≥ seuils ; rapport HTML relu, branches non couvertes justifiées — 99,6 % lignes,
-      96,7 % branches ; 6 branches défensives justifiées dans le README (« Tests et couverture »)
+      96,7 % branches ; 6 branches défensives justifiées dans `docs/TESTS.md`
 - [x] `npm run deps:outdated` : mise à jour du tableau du README (versions installées et dernières stables,
       fraîcheur à la date de rendu) — relevé du 2026-10-08 : toutes les dépendances à jour et 🟢, sauf
       TypeScript 7.0.2 disponible, volontairement non adopté (ADR-0005)
