@@ -29,14 +29,20 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │                                  │ implémentent les ports                                    │
 │  infrastructure/                                                                             │
 │   preferences/  InMemoryUserPreferencesProvider (mock du service interne)                    │
+│                 FailingUserPreferencesProvider (panne simulée, démo)                         │
 │   music/        ItunesMusicProvider · MusicBrainzMusicProvider · LocalMusicProvider          │
 │                 décorateurs : Cached / RateLimited / Resilient · FallbackMusicCatalog        │
 │   notification/ mocks vendeurs : FakeEmailClient · FakeSmsGateway · FakePushService          │
 │                 adaptateurs : Email/Sms/PushChannelAdapter · LogChannel (dernier recours)    │
+│                 FileNotificationLog (journal des envois simulés : fichier + console)         │
 │   logging/      PinoLogger                                                                   │
 │  composition/container.ts  ← SEUL endroit qui connaît les classes concrètes (awilix)         │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+Décorateurs musicaux : `Cached` s'appuie sur lru-cache, `Resilient` sur cockatiel ; `RateLimited` est une
+fenêtre glissante interne de quelques lignes (p-throttle met en file au lieu d'échouer immédiatement,
+voir [ADR-0006](adr/0006-quota-sans-p-throttle.md)).
 
 ## 2. Flux de l'appel `TriggerWakeUp.execute({ userId, dayOfWeek, weather })`
 
@@ -114,18 +120,18 @@ derrière un port n'apporterait qu'une indirection.
 
 ## 4. Design patterns retenus
 
-| Pattern                               | Où                                                                          | Problème métier résolu                                                    |
-| ------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **Ports & Adapters** (hexagonal)      | partout                                                                     | changer de fournisseur ou de canal sans toucher au métier                 |
-| **Dependency Injection / IoC**        | `composition/container.ts` (awilix)                                         | exigence « aucun `new` d'implémentation concrète »                        |
-| **Adapter**                           | `ItunesMusicProvider`, `MusicBrainzMusicProvider`                           | traduire chaque API vers `Track` (anti-corruption layer + zod)            |
-| **Adapter**                           | `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter`            | ramener 3 mocks aux interfaces différentes vers `NotificationChannel`     |
-| **Decorator**                         | `CachedMusicProvider`, `RateLimitedMusicProvider`, `ResilientMusicProvider` | ajouter cache / quota 20 req/min / timeout sans modifier les fournisseurs |
-| **Chain of Responsibility**           | `FallbackMusicCatalog`, `NotificationDispatcher`                            | mode dégradé : essayer le suivant quand un maillon échoue                 |
-| **Strategy**                          | `TrackSelectionPolicy` ; choix du canal par `ChannelType`                   | règles de sélection isolées et testables                                  |
-| **Registry** (+ Factory du conteneur) | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 ligne d'enregistrement |
-| **Circuit Breaker / Retry / Timeout** | `ResilientMusicProvider` (cockatiel)                                        | ne pas attendre un fournisseur en panne à l'heure du réveil               |
-| **Value Object / Factory method**     | `Track.create`, `UserId.parse`, `WakeUpMessage.compose`                     | invariants garantis, pas d'objet invalide dans le domaine                 |
+| Pattern                               | Où                                                                          | Problème métier résolu                                                                               |
+| ------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Ports & Adapters** (hexagonal)      | partout                                                                     | changer de fournisseur ou de canal sans toucher au métier                                            |
+| **Dependency Injection / IoC**        | `composition/container.ts` (awilix)                                         | exigence « aucun `new` d'implémentation concrète »                                                   |
+| **Adapter**                           | `ItunesMusicProvider`, `MusicBrainzMusicProvider`                           | traduire chaque API vers `Track` (anti-corruption layer + zod)                                       |
+| **Adapter**                           | `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter`            | ramener 3 mocks aux interfaces différentes vers `NotificationChannel`                                |
+| **Decorator**                         | `CachedMusicProvider`, `RateLimitedMusicProvider`, `ResilientMusicProvider` | ajouter cache / quota 20 req/min (échec immédiat, ADR-0006) / timeout sans modifier les fournisseurs |
+| **Chain of Responsibility**           | `FallbackMusicCatalog`, `NotificationDispatcher`                            | mode dégradé : essayer le suivant quand un maillon échoue                                            |
+| **Strategy**                          | `TrackSelectionPolicy` ; choix du canal par `ChannelType`                   | règles de sélection isolées et testables                                                             |
+| **Registry** (+ Factory du conteneur) | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 ligne d'enregistrement                            |
+| **Circuit Breaker / Retry / Timeout** | `ResilientMusicProvider` (cockatiel)                                        | ne pas attendre un fournisseur en panne à l'heure du réveil                                          |
+| **Value Object / Factory method**     | `Track.create`, `UserId.parse`, `WakeUpMessage.compose`                     | invariants garantis, pas d'objet invalide dans le domaine                                            |
 
 Patterns volontairement **non** retenus : Singleton « à la main » (le conteneur gère les cycles de vie),
 Observer/EventBus (un seul consommateur, ce serait de la complexité gratuite), Repository générique.
@@ -142,7 +148,7 @@ Vue de synthèse. Le détail testable (un ID `CA-…` par comportement attendu) 
 | Mocks aux interfaces différentes                      | `FakeEmailClient.sendMail({...})`, `FakeSmsGateway.send(phone, text)`, `FakePushService.push(token, payload, cb)` | tests des adaptateurs                         |
 | Aucune dépendance sans vérification licence/fraîcheur | `DEPENDENCY_POLICY.md`, `license-policy.json`, `deps:licenses`, `deps:audit`, tableau README                      | CI                                            |
 | Panne ≠ silence                                       | chaînes de fallback, `EmergencyPlaylist`, `LogChannel`, rapport `degraded`                                        | tests de panne du cas d'usage                 |
-| iTunes ~20 req/min                                    | `RateLimitedMusicProvider` (p-throttle) + `CachedMusicProvider` (lru-cache, TTL)                                  | tests avec fake timers                        |
+| iTunes ~20 req/min                                    | `RateLimitedMusicProvider` (fenêtre glissante, échec immédiat, ADR-0006) + `CachedMusicProvider` (lru-cache, TTL) | tests avec fake timers                        |
 | MusicBrainz exige un User-Agent                       | en-tête fourni par la config `MUSICBRAINZ_USER_AGENT`, vérifié au démarrage (zod)                                 | test de l'adaptateur                          |
 | `trackViewUrl` ne fuit pas dans le métier             | traduction en `Track.link` dans l'adaptateur ; core sans dépendance                                               | `arch:check` + test                           |
 | Isolation, faible couplage                            | règles dependency-cruiser                                                                                         | `arch:check`                                  |
@@ -159,3 +165,5 @@ Vue de synthèse. Le détail testable (un ID `CA-…` par comportement attendu) 
 - **Utilisateur inconnu** : traité comme une panne du service de préférences (mode dégradé, canal `LOG`).
 - **Ordonnancement** hors périmètre (énoncé) : l'API HTTP et un script CLI simulent le déclenchement.
 - **Fallback local** : 5 à 10 morceaux codés en dur, au moins un par type de météo.
+- **Recherche MusicBrainz** : requête Lucene par champs (`recording:"…" AND artist:"…"`), la recherche
+  plein texte renvoyant surtout des reprises (constaté sur capture réelle).

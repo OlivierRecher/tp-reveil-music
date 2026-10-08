@@ -69,54 +69,54 @@ Chaque sous-phase (3b, 3c, 3d) suit le même ordre : critères validés → test
 
 ### 3a. Configuration et transverses
 
-- [ ] 🧪 Tests rouges de CA-MUS-04 (démarrage refusé sans `User-Agent`) et de la validation de l'environnement
-- [ ] `config/env.ts` : schéma zod de l'environnement (`.env.example`), échec explicite au démarrage
-- [ ] `logging/PinoLogger` implémente `Logger`
-- [ ] Type `HttpFetch` (signature de `fetch`) injecté dans les adaptateurs HTTP
+- [x] 🧪 Tests rouges de CA-MUS-04 (démarrage refusé sans `User-Agent`) et de la validation de l'environnement
+- [x] `config/env.ts` : schéma zod de l'environnement (`.env.example`), échec explicite au démarrage
+- [x] `logging/PinoLogger` implémente `Logger`
+- [x] Type `HttpFetch` (signature de `fetch`) injecté dans les adaptateurs HTTP
 
 ### 3b. Préférences (mock du service interne)
 
-- [ ] 🧪 Critères CA-PRF-01 et 02 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits, échouant pour la bonne raison, relus, commit
+- [x] 🧪 Critères CA-PRF-01 et 02 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Tests d'acceptation écrits, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
-- [ ] `InMemoryUserPreferencesProvider` + jeu de données (≥ 4 utilisateurs couvrant chaque canal,
+- [x] `InMemoryUserPreferencesProvider` + jeu de données (≥ 4 utilisateurs couvrant chaque canal,
       un utilisateur sans coordonnée pour son canal préféré, un utilisateur sans morceau pour certaines météos)
 
 ### 3c. Musique 🎯
 
-- [ ] 🧪 Critères CA-MUS-01 à 12 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits : fixtures JSON réelles (une capture iTunes et une MusicBrainz),
+- [x] 🧪 Critères CA-MUS-01 à 12 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Tests d'acceptation écrits : fixtures JSON réelles (une capture iTunes et une MusicBrainz),
       réponses vides ou malformées, HTTP 503, timeout, cache, quota (fake timers), circuit ouvert, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
 Implémentation :
 
-- [ ] `ItunesMusicProvider` : URL `search?term=…&media=music&limit=5`, schéma zod de la réponse,
+- [x] `ItunesMusicProvider` : URL `search?term=…&media=music&limit=5`, schéma zod de la réponse,
       traduction `trackName/artistName/trackViewUrl` → `Track` (rien ne fuit)
-- [ ] `MusicBrainzMusicProvider` : `recording?query=…&fmt=json`, en-tête `User-Agent` issu de la
+- [x] `MusicBrainzMusicProvider` : `recording?query=…&fmt=json` (Lucene par champs), en-tête `User-Agent` issu de la
       config, traduction `title/artist-credit` → `Track`
-- [ ] `LocalMusicProvider` : liste codée en dur (≥ 1 morceau par météo), ne lève jamais ; implémente
+- [x] `LocalMusicProvider` : liste codée en dur (≥ 1 morceau par météo), ne lève jamais ; implémente
       aussi `EmergencyPlaylist`
-- [ ] Décorateurs : `CachedMusicProvider` (lru-cache + TTL), `RateLimitedMusicProvider` (p-throttle,
-      échec immédiat hors budget), `ResilientMusicProvider` (cockatiel : timeout + circuit breaker)
-- [ ] `FallbackMusicCatalog` (chaîne de responsabilité) implémente `MusicCatalog`
+- [x] Décorateurs : `CachedMusicProvider` (lru-cache + TTL), `RateLimitedMusicProvider` (fenêtre
+      glissante interne, échec immédiat hors budget ; p-throttle retiré, ADR-0006), `ResilientMusicProvider` (cockatiel : timeout + circuit breaker)
+- [x] `FallbackMusicCatalog` (chaîne de responsabilité) implémente `MusicCatalog`
 
 ### 3d. Notifications 🎯
 
-- [ ] 🧪 Critères CA-NOT-01 à 05 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits : succès, statut rejeté, erreur, callback en erreur, coordonnée absente, échouant pour la bonne raison, relus, commit
+- [x] 🧪 Critères CA-NOT-01 à 05 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Tests d'acceptation écrits : succès, statut rejeté, erreur, callback en erreur, coordonnée absente, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
 Implémentation :
 
-- [ ] Mocks « fournisseurs » aux interfaces **volontairement différentes**, écrivant dans un fichier
+- [x] Mocks « fournisseurs » aux interfaces **volontairement différentes**, écrivant dans un fichier
       de log (et la console) :
   - `FakeEmailClient.sendMail({ to, subject, html }): Promise<{ messageId }>`
   - `FakeSmsGateway.send(phoneNumber, text): Promise<{ status: 'QUEUED' | 'REJECTED' }>`
   - `FakePushService.push(deviceToken, { title, body }, callback(err))` (style callback)
   - Chaque mock peut être configuré pour simuler une panne (tests et démo)
-- [ ] Adaptateurs `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter` → `NotificationChannel`
-- [ ] `LogChannel` : canal de dernier recours, ne lève jamais
+- [x] Adaptateurs `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter` → `NotificationChannel`
+- [x] `LogChannel` : canal de dernier recours, ne lève jamais
 
 ## Phase 4 — Composition root et points d'entrée
 

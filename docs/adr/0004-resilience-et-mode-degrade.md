@@ -1,6 +1,8 @@
 # ADR-0004 — Résilience et mode dégradé
 
 - Statut : Accepté (2026-10-08)
+- Amendé par [ADR-0006](0006-quota-sans-p-throttle.md) : le quota n'utilise plus p-throttle (le texte
+  ci-dessous est conservé tel qu'accepté, conformément à la règle des ADR)
 
 ## Contexte
 
