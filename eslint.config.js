@@ -2,9 +2,13 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 // Règle d'architecture n°2 de l'énoncé : aucune implémentation concrète instanciée avec `new`
-// en dehors de la composition root. On cible les suffixes de nos classes de services/adaptateurs.
+// en dehors de la composition root. On cible les suffixes de nos classes de services/adaptateurs
+// (`Logger`/`Log` : PinoLogger, FileNotificationLog ; `WakeUp` : le cas d'usage TriggerWakeUp).
 const FORBIDDEN_NEW =
-  'NewExpression[callee.name=/(Provider|Catalog|Notifier|Channel|Adapter|Client|Gateway|Service|Repository|UseCase|Dispatcher|Policy)$/]';
+  'NewExpression[callee.name=/(Provider|Catalog|Notifier|Channel|Adapter|Client|Gateway|Service|Repository|UseCase|Dispatcher|Policy|Logger|Log|WakeUp)$/]';
+
+const LOAD_MODULES_MESSAGE =
+  'loadModules (fast-glob → braces, GHSA-vfj7-8cjw-p6xm) est exclu : enregistrement explicite dans container.ts (ADR-0003).';
 
 export default tseslint.config(
   { ignores: ['**/node_modules/**', '**/coverage/**', '**/dist/**', '**/dev-dist/**'] },
@@ -17,6 +21,15 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'error',
+      // Condition de l'exception d'audit GHSA-vfj7-8cjw-p6xm (ADR-0003) : `loadModules` interdit partout.
+      'no-restricted-imports': [
+        'error',
+        { name: 'awilix', importNames: ['loadModules'], message: LOAD_MODULES_MESSAGE },
+      ],
+      'no-restricted-properties': [
+        'error',
+        { property: 'loadModules', message: LOAD_MODULES_MESSAGE },
+      ],
       'no-restricted-syntax': [
         'error',
         {

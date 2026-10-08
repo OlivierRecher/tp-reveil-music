@@ -33,8 +33,17 @@ Analyse d'exploitabilité : `fast-glob` n'est utilisé que par `awilix.loadModul
 l'appelle **jamais** (enregistrement explicite, règle documentée dans CLAUDE.md) et aucun motif glob ne
 provient d'une entrée utilisateur. Risque jugé non exploitable.
 
+Condition vérifiée automatiquement : test `[CA-CMP-01]` sur la composition root et, dans tout le dépôt,
+règles ESLint `no-restricted-imports` (`loadModules` importé d'awilix) et `no-restricted-properties`
+(`container.loadModules(...)`).
+
 → Exception dans `audit-exceptions.json`, **expirant le 2027-01-08**. À réévaluer : correctif publié,
 nouvelle version d'awilix sans `fast-glob`, ou bascule vers une autre solution.
+
+Revue du 2026-10-08 (phase 6) : toujours nécessaire (`braces` 3.0.3 reste la dernière version, aucune
+version d'awilix sans `fast-glob` ; le « correctif » proposé par `npm audit`, awilix 6.0.0, date de 2021,
+recule de sept versions majeures et dépend de `glob` 7, obsolète : 🔴 selon notre politique), exception
+non expirée, condition respectée.
 
 Outils d'exception d'audit écartés : `audit-ci` (dernière version 2024-07, dépend d'`event-stream`, connu
 pour une attaque de la chaîne d'approvisionnement en 2018) et `better-npm-audit` (2024-09). Les deux sont

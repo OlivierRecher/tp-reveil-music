@@ -31,13 +31,18 @@ describe('PinoLogger', () => {
     });
   });
 
-  it('journalise sans contexte', () => {
+  it.each([
+    ['debug', 20],
+    ['info', 30],
+    ['warn', 40],
+    ['error', 50],
+  ] as const)('journalise au niveau %s sans contexte', (level, pinoLevel) => {
     const { logger, stream } = setup();
 
-    logger.info('réveil déclenché');
+    logger[level]('réveil déclenché');
 
     expect(stream.lines).toHaveLength(1);
-    expect(stream.lines[0]).toMatchObject({ level: 30, msg: 'réveil déclenché' });
+    expect(stream.lines[0]).toMatchObject({ level: pinoLevel, msg: 'réveil déclenché' });
   });
 
   it('respecte le niveau minimal configuré sur pino', () => {

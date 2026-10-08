@@ -183,7 +183,8 @@ const simulatedNetworkFailure: HttpFetch = () =>
 /**
  * Canaux de notification : mocks des fournisseurs (en panne si `SIMULATED_FAILURES` les cite),
  * adaptateurs vers `NotificationChannel`, et canal `LOG` de dernier recours.
- * Ajouter un canal = un adaptateur + une entrée dans `notificationChannels`.
+ * Ajouter un canal = un adaptateur + une valeur de `ChannelType` (core) + une entrée dans
+ * `notificationChannels` (ADR-0002, CA-NOT-05).
  */
 function registerNotifications(container: Container, config: AppConfig): void {
   const failing = config.simulatedFailures;

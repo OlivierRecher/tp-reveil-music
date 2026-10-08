@@ -30,7 +30,8 @@ export class LogChannel implements NotificationChannel {
   send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
     const userId = recipient.userId.value;
     try {
-      this.#notificationLog.write(`[LOG] user=${userId} ${message.subject} ${message.body}`);
+      // Le corps reprend déjà l'objet (« Bon lundi ! … ») : l'écrire en plus le dupliquerait.
+      this.#notificationLog.write(`[LOG] user=${userId} ${message.body}`);
     } catch (error) {
       // Jamais de silence : le message reste lisible dans le journal applicatif.
       this.#logger.error('Canal LOG : journal des notifications indisponible', {

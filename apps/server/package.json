@@ -5,7 +5,7 @@
   "description": "Adaptateurs d'infrastructure, composition root (DI) et API HTTP du réveil musical.",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=../../.env src/main.ts",
+    "dev": "node --watch --env-file-if-exists=../../.env src/main.ts | pino-pretty",
     "start": "node --env-file-if-exists=../../.env src/main.ts",
     "wake": "node --env-file-if-exists=../../.env src/cli/wake.ts",
     "typecheck": "tsc -p tsconfig.json"

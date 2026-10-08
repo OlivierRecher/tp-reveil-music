@@ -148,22 +148,37 @@ Implémentation :
 - [x] Formulaire (utilisateur, jour, météo) → `POST /api/wake-ups`, affichage du rapport (morceau,
       canal utilisé, tentatives, badge « mode dégradé »)
 - [ ] Manifest + icônes, service worker (coquille hors ligne), installable (vérification Lighthouse)
-      — build vérifié (manifest, `sw.js`, icônes 192/512 générées par `scripts/generate-icons.mjs`),
-      Lighthouse à faire en démo
+      — build vérifié (manifest, `sw.js`, icônes 192/512 générées par `scripts/generate-icons.mjs`) ;
+      phase 6 : manifest et Workbox extraits dans `src/pwaManifest.ts` et testés (CA-WEB-07, dimensions
+      réelles des PNG comprises). Reste : Lighthouse en démo
 - [ ] Accessibilité de base (labels, contrastes, navigation clavier) — implémentée (`label for`,
-      `aria-live`, focus visible, contrastes AA calculés), revue Lighthouse à faire en démo
+      `aria-live`, focus visible, contrastes AA calculés) ; phase 6 : `lang="fr"`, libellés, contrastes
+      WCAG ≥ 4,5:1 et focus visible testés (CA-WEB-08). Reste : `aria-live` et clavier en revue Lighthouse
+      en démo
 - [x] Ajouter `apps/web` à la couverture si de la logique non triviale y apparaît
 
 ## Phase 6 — Finalisation et livrables
 
-- [ ] Chaque critère `CA-…` a au moins un test portant son ID (`grep -r "\[CA-" */*/test`)
-- [ ] Couverture ≥ seuils ; rapport HTML relu, branches non couvertes justifiées
-- [ ] `npm run deps:outdated` : mise à jour du tableau du README (versions installées et dernières stables,
-      fraîcheur à la date de rendu)
-- [ ] Revue des exceptions d'audit
-- [ ] README : démarrage rapide, architecture résumée, exemples d'appel `curl`
-- [ ] Relecture finale contre la grille : isolation, IoC (aucun `new`), patterns, tests, README des dépendances
-- [ ] Tag `v1.0.0`
+- [x] Chaque critère `CA-…` a au moins un test portant son ID (`grep -r "\[CA-" */*/test`) — 49/49
+      critères DOM/APP/MUS/NOT/PRF/CMP/WEB (CA-WEB-07/08 ajoutés en phase 6) ; ARC/DEP vérifiés par
+      l'outillage
+- [x] Couverture ≥ seuils ; rapport HTML relu, branches non couvertes justifiées — 99,6 % lignes,
+      96,7 % branches ; 6 branches défensives justifiées dans le README (« Tests et couverture »)
+- [x] `npm run deps:outdated` : mise à jour du tableau du README (versions installées et dernières stables,
+      fraîcheur à la date de rendu) — relevé du 2026-10-08 : toutes les dépendances à jour et 🟢, sauf
+      TypeScript 7.0.2 disponible, volontairement non adopté (ADR-0005)
+- [x] Revue des exceptions d'audit — 2026-10-08 : seule GHSA-vfj7-8cjw-p6xm (braces via awilix →
+      fast-glob) ; toujours nécessaire (braces 3.0.3 = dernière version, le « correctif » npm est
+      awilix 6.0.0 de 2021), non expirée (2027-01-08), condition « jamais `loadModules` » vérifiée par
+      `[CA-CMP-01]` et désormais par ESLint dans tout le dépôt (ADR-0003)
+- [x] README : démarrage rapide, architecture résumée, exemples d'appel `curl` — revérifiés contre le
+      code (`npm run wake` exécuté, variables, utilisateurs, formats de réponse) ; ajout de `build:web` et
+      de la section « Tests et couverture »
+- [x] Relecture finale contre la grille : isolation, IoC (aucun `new`), patterns, tests, README des dépendances
+      — 2026-10-08 : règle ESLint anti-`new` étendue (`TriggerWakeUp`, `PinoLogger`, `FileNotificationLog`
+      n'étaient pas couverts), `pino-pretty` branché sur `dev:server`, documentation alignée (ajout d'un
+      canal = adaptateur + valeur de `ChannelType` + enregistrement) ; points restants à arbitrer par l'équipe
+- [x] Tag `v1.0.0`
 
 ---
 

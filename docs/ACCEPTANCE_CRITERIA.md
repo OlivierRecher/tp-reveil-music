@@ -111,7 +111,7 @@ par l'utilisateur pour une météo non couverte est un fonctionnement **normal**
 | CA-WEB-08 | Accessibilité de base : champs libellés, zone de résultat annoncée (`aria-live`), utilisable entièrement au clavier, contrastes AA                                | ADR-0001                      | [x]    |
 
 Critères rédigés et validés le 2026-10-08 (exécution autonome des phases demandée par l'équipe).
-CA-WEB-07 et CA-WEB-08 sont vérifiés par le build et une revue manuelle (Lighthouse) ; les autres par des tests.
+Tous les critères `CA-WEB-…` sont vérifiés par des tests. CA-WEB-07 : `apps/web/test/pwaManifest.test.ts` (manifest, icônes 192/512 any + maskable dont les dimensions réelles sont lues dans l'en-tête PNG, précache de la coquille, `/api` exclu du fallback hors ligne), complété par `npm run build:web` et Lighthouse en démo. CA-WEB-08 : `apps/web/test/accessibility.test.ts` (`lang="fr"`, libellés non vides, contrastes AA ≥ 4,5:1 calculés selon WCAG depuis les variables de `style.css`, focus visible) ; l'annonce `aria-live` et la navigation au clavier relèvent du rendu DOM (`main.ts`) et restent vérifiées en revue manuelle et par Lighthouse en démo.
 
 ## Transverses (vérifiés par l'outillage)
 

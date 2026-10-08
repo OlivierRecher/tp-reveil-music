@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { pwaManifest, workboxOptions } from './src/pwaManifest.ts';
 
 export default defineConfig({
   server: {
@@ -9,30 +10,9 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      manifest: {
-        name: 'Réveil musical',
-        short_name: 'Réveil',
-        description:
-          'Déclenche un réveil musical de démonstration et affiche le morceau, le canal et le mode dégradé.',
-        lang: 'fr',
-        start_url: '/',
-        display: 'standalone',
-        background_color: '#111827',
-        theme_color: '#1f2937',
-        icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          // Déclaration séparée (« any maskable » est déconseillé) : le motif tient dans la zone sûre.
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
-      },
-      workbox: {
-        // Coquille hors ligne : HTML, JS et CSS précachés (les icônes du manifest le sont d'office).
-        globPatterns: ['**/*.{html,js,css}'],
-        navigateFallback: 'index.html',
-        // L'API n'est jamais servie par le cache : un réveil hors ligne doit échouer visiblement.
-        navigateFallbackDenylist: [/^\/api\//],
-      },
+      // Manifest et Workbox testés dans test/pwaManifest.test.ts (CA-WEB-07).
+      manifest: pwaManifest,
+      workbox: workboxOptions,
     }),
   ],
 });
