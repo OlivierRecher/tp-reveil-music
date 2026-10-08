@@ -17,11 +17,46 @@ npm run dev:web         # PWA : http://localhost:5173
 npm run verify          # format, lint, types, architecture, tests + couverture, licences, audit
 ```
 
+Déclencher un réveil sans serveur (script de démonstration ; le rapport JSON sort sur la sortie
+standard, le journal pino sur la sortie d'erreur ; code de sortie 1 si un argument est invalide) :
+
+```bash
+npm run wake -- --user u1 --day LUNDI --weather PLUIE
+```
+
+Par l'API HTTP :
+
 ```bash
 curl -X POST http://localhost:3000/api/wake-ups \
   -H 'content-type: application/json' \
   -d '{"userId":"u1","dayOfWeek":"LUNDI","weather":"PLUIE"}'
+# 200 : { userId, dayOfWeek, weather, track: { title, artist, link?, source }, trackSource,
+#         deliveredVia, attempts: [{ channel, success, error? }], degraded }
+# 400 : { "error": "INVALID_REQUEST", "details": [{ "field": "weather", "message": "Météo invalide…" }] }
+# 500 : { "error": "INTERNAL_ERROR" } (détail uniquement dans le journal)
+
+curl http://localhost:3000/health   # { "status": "ok" }
 ```
+
+Utilisateurs du jeu de données : `u1` (EMAIL), `u2` (SMS, préférences partielles), `u3` (PUSH),
+`u4` (SMS sans numéro). Jours : `LUNDI` … `DIMANCHE` ; météos : `SOLEIL`, `PLUIE`, `NEIGE`, `NUAGEUX`.
+
+### Démontrer le mode dégradé
+
+`SIMULATED_FAILURES` (liste séparée par virgules) met en panne des dépendances choisies, sans toucher
+au code : `preferences`, `itunes`, `musicbrainz` (le `fetch` du fournisseur rejette, aucun appel
+réseau), `email`, `sms`, `push` (le mock du fournisseur échoue).
+
+```bash
+SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push \
+  npm run wake -- --user u1 --day LUNDI --weather PLUIE
+# → morceau local, remise par le canal LOG, "degraded": true, avertissements (warn) au journal
+```
+
+`MUSIC_PROVIDERS` change l'ordre ou la composition de la chaîne musicale (`musicbrainz,itunes`,
+`musicbrainz`, ou vide pour le seul fallback local). Les envois simulés sont écrits dans
+`NOTIFICATION_LOG_FILE` (chemin relatif au dossier `apps/server` avec les scripts npm ; `logs/` est
+ignoré par git). Toutes les variables : [`.env.example`](.env.example).
 
 ## Architecture
 

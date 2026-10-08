@@ -16,6 +16,7 @@
     "dev:server": "npm run dev --workspace @reveil/server",
     "dev:web": "npm run dev --workspace @reveil/web",
     "start": "npm run start --workspace @reveil/server",
+    "wake": "npm run wake --workspace @reveil/server --",
     "build:web": "npm run build --workspace @reveil/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",

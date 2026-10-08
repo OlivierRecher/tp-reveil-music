@@ -37,6 +37,7 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │                 FileNotificationLog (journal des envois simulés : fichier + console)         │
 │   logging/      PinoLogger                                                                   │
 │  composition/container.ts  ← SEUL endroit qui connaît les classes concrètes (awilix)         │
+│  cli/wake.ts               ← script de démonstration (même conteneur, sans HTTP)             │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -117,6 +118,26 @@ détail technique, dont l'extensibilité passe par les canaux injectés (`Notifi
 derrière un port n'apporterait qu'une indirection.
 
 `Track.link` est une URL neutre : `trackViewUrl` d'iTunes est traduit dans l'adaptateur et ne fuit pas.
+
+### Points d'entrée (adaptateurs entrants)
+
+Les deux points d'entrée valident la saisie avec les parseurs du domaine (`UserId.parse`,
+`parseDayOfWeek`, `parseWeatherType`) avant d'appeler le cas d'usage : une saisie invalide ne déclenche
+aucun appel musical ni aucun envoi. Ils ne connaissent que `@reveil/core` et la composition root.
+
+- **HTTP** (`http/buildHttpServer.ts`, Fastify) : `POST /api/wake-ups` avec
+  `{ userId, dayOfWeek, weather }` (schéma zod) → `200` + `WakeUpReport` sérialisé (`track` via
+  `Track.toJSON()`) ; `400 { error: 'INVALID_REQUEST', details: [{ field, message }] }` pour un champ
+  invalide ou manquant, un corps absent, non objet ou mal formé ; `500 { error: 'INTERNAL_ERROR' }`
+  sans détail (journalisé en `error`). `GET /health` → `200 { status: 'ok' }`.
+- **CLI** (`cli/wake.ts`, `npm run wake -- --user u1 --day LUNDI --weather PLUIE`) : arguments lus
+  par `node:util` `parseArgs` (strict), rapport JSON sur la sortie standard, journal sur la sortie
+  d'erreur, code de sortie `1` si la saisie ou la configuration est invalide.
+
+`main.ts` charge la configuration (échec explicite si invalide), construit le conteneur et le serveur,
+et sur `SIGINT`/`SIGTERM` ferme le serveur puis appelle `container.dispose()` (vidage du journal pino).
+`SIMULATED_FAILURES` est lu par la composition root uniquement : elle substitue le mock en panne
+(préférences, canaux) ou un `fetch` qui rejette (fournisseurs musicaux), sans toucher au métier.
 
 ## 4. Design patterns retenus
 

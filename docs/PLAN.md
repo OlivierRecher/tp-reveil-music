@@ -127,13 +127,14 @@ Implémentation :
 
 Implémentation :
 
-- [ ] `composition/container.ts` : enregistrement awilix explicite (pas de `loadModules`), chaîne
+- [x] `composition/container.ts` : enregistrement awilix explicite (pas de `loadModules`), chaîne
       musicale construite selon `MUSIC_PROVIDERS`, registre des canaux
-- [ ] `http/` : serveur Fastify, `POST /api/wake-ups` (validation zod → 400 si invalide), `GET /health`,
+- [x] `http/` : serveur Fastify, `POST /api/wake-ups` (validation zod → 400 si invalide), `GET /health`,
       gestion d'erreurs centralisée
-- [ ] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
-- [ ] Script CLI de démonstration : `npm run wake -- --user u1 --day LUNDI --weather PLUIE`
-- [ ] Démo manuelle avec les vraies API iTunes et MusicBrainz, puis avec le réseau coupé (mode dégradé)
+- [x] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
+- [x] Script CLI de démonstration : `npm run wake -- --user u1 --day LUNDI --weather PLUIE`
+- [x] Démo manuelle avec les vraies API iTunes et MusicBrainz, puis avec le réseau coupé (mode dégradé)
+      — panne simulée par `SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push` (2026-10-08)
 
 ## Phase 5 — Client PWA (`apps/web`)
 
