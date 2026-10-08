@@ -14,6 +14,7 @@ npm install
 cp .env.example .env    # renseigner MUSICBRAINZ_USER_AGENT avec un contact réel
 npm run dev:server      # API : http://localhost:3000
 npm run dev:web         # PWA : http://localhost:5173
+npm run build:web       # PWA de production (manifest + service worker) dans apps/web/dist
 npm run verify          # format, lint, types, architecture, tests + couverture, licences, audit
 ```
 
@@ -75,6 +76,43 @@ concrètes, injectées par awilix. Détails : [`docs/ARCHITECTURE.md`](docs/ARCH
 Suivi du projet : [`docs/PLAN.md`](docs/PLAN.md). Les tests sont écrits **avant** le code, à partir
 des critères d'acceptation tirés de l'énoncé : [`docs/ACCEPTANCE_CRITERIA.md`](docs/ACCEPTANCE_CRITERIA.md).
 
+## Tests et couverture
+
+```bash
+npm test                # 477 tests (Vitest), sans aucun accès réseau
+npm run test:coverage   # + rapport texte, HTML (coverage/index.html) et lcov
+```
+
+Chacun des 49 critères `CA-DOM/APP/MUS/NOT/PRF/CMP/WEB-…` est vérifié par au moins un test portant son
+ID (`grep -rhoE "\[CA-[A-Z]+-[0-9]+\]" packages/*/test apps/*/test | sort -u`) ; les critères
+transverses `CA-ARC/DEP-…` le sont par l'outillage (`lint`, `arch:check`, `deps:*`).
+
+Couverture au 2026-10-08 (seuils bloquants : 90 % lignes, fonctions et instructions, 85 % branches) :
+**99,6 % lignes, 99,6 % instructions, 99,4 % fonctions, 96,7 % branches**.
+
+Fichiers exclus de la mesure, faute de logique propre à tester unitairement :
+
+- `apps/server/src/main.ts` et `apps/server/src/cli/wake.ts` : points d'entrée qui lisent l'environnement,
+  appellent la composition root et démarrent le serveur ou impriment le rapport ; tout ce qu'ils
+  assemblent (`loadConfig`, `createAppContainer`, `buildHttpServer`, `parseWakeArgs`) est testé.
+- `apps/web/src/main.ts` : rendu DOM fin ; les décisions (champs, requête, validation de la réponse,
+  libellés du rapport) vivent dans des fonctions pures testées. L'annonce `aria-live` et la navigation
+  au clavier sont vérifiées en revue et par Lighthouse (CA-WEB-08).
+- `apps/web/vite.config.ts` : configuration de build ; le manifest et les options Workbox qu'elle
+  consomme sont extraits dans `apps/web/src/pwaManifest.ts` et testés (CA-WEB-07).
+- `index.ts` : réexportations de l'API publique.
+
+Branches restantes non couvertes (6 sur 184), toutes défensives et non atteignables par les tests sans
+artifice :
+
+| Fichier                                         | Branche                                                       | Pourquoi elle n'est pas testée                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `composition/container.ts`                      | `fetch` natif par défaut quand aucun `httpFetch` n'est fourni | l'exercer ferait un appel réseau réel ; les tests injectent toujours un faux `fetch`   |
+| `cli/parseWakeArgs.ts`                          | erreur de `parseArgs` qui ne serait pas une `Error`           | `node:util` ne lève que des `Error` ; garde de typage (`unknown`)                      |
+| `http/wakeUpRequestSchema.ts`                   | exception non `DomainError` relancée par un parseur           | les parseurs du domaine ne lèvent que des `DomainError` ; garde contre une régression  |
+| `http/buildHttpServer.ts`                       | erreur portant un `statusCode` hors 4xx (5xx)                 | même traitement que l'erreur sans statut (500 générique), testée                       |
+| `infrastructure/music/LocalMusicProvider.ts` ×2 | morceau par défaut si la playlist locale était vide           | la playlist est une constante non vide : filet du « fallback qui ne peut pas échouer » |
+
 ## Dépendances
 
 Toute dépendance est vérifiée **avant** intégration selon
@@ -83,7 +121,7 @@ de l'arbre complet, transitives incluses), fraîcheur (`npm run deps:outdated`),
 (`npm run deps:audit`). Les versions sont figées (`save-exact`) et le lockfile est commité.
 
 Fraîcheur : 🟢 dernière stable publiée il y a moins de 12 mois · 🟠 12 à 24 mois · 🔴 plus de 24 mois.
-Relevé du **2026-10-08**.
+Relevé du **2026-10-08** (`npm run deps:outdated` vide, `npm view <pkg> version time` pour chaque ligne).
 
 ### Production (`apps/server`, `apps/web`)
 
