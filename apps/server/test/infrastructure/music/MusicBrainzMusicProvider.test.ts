@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Track, TrackQuery } from '@reveil/core';
 import { MusicBrainzMusicProvider } from '../../../src/infrastructure/music/MusicBrainzMusicProvider.ts';
 import { FakeHttpFetch } from './doubles/FakeHttpFetch.ts';
-import { expectUnavailable, loadFixture } from './doubles/helpers.ts';
+import { loadFixture } from '../../doubles/loadFixture.ts';
+import { expectUnavailable } from './doubles/helpers.ts';
 
 // Adaptateur MusicBrainz testé contre une réponse réelle stockée en fixture : aucun accès réseau.
 
