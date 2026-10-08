@@ -254,6 +254,38 @@ describe('TriggerWakeUp', () => {
     });
   });
 
+  describe('signal de repli du catalogue', () => {
+    it('[CA-APP-10] un morceau de source locale sans repli signalé est un fonctionnement normal', async () => {
+      const localTrack = Track.create({
+        title: 'Clair de lune',
+        artist: 'Debussy',
+        source: LOCAL_TRACK_SOURCE,
+      });
+      const { useCase, logger } = setup({
+        catalog: new StubMusicCatalog(localTrack, { degraded: false }),
+      });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(report.track).toBe(localTrack);
+      expect(report.degraded).toBe(false);
+      expect(logger.at('warn')).toHaveLength(0);
+    });
+
+    it('[CA-APP-10] un repli signalé par le catalogue rend le réveil dégradé, quelle que soit la source', async () => {
+      const { useCase, logger } = setup({
+        catalog: new StubMusicCatalog(RESOLVED_TRACK, { degraded: true }),
+      });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(report.track).toBe(RESOLVED_TRACK);
+      expect(report.trackSource).toBe('itunes');
+      expect(report.degraded).toBe(true);
+      expect(logger.at('warn')).toHaveLength(1);
+    });
+  });
+
   describe('canaux de notification en panne', () => {
     it('[CA-APP-04] envoie sur un autre canal disponible si le canal préféré échoue et liste la tentative échouée', async () => {
       const { useCase, sms, lastResort } = setup({ email: failingChannel('EMAIL') });
