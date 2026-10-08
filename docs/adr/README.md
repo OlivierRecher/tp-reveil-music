@@ -7,7 +7,8 @@ Format : contexte → décision → alternatives → conséquences. Un ADR accep
 | ------------------------------------------------- | ------------------------------------------------------- | ------------------------ |
 | [0001](0001-backend-node-et-client-pwa.md)        | Backend Node.js + client PWA plutôt qu'une PWA autonome | Accepté                  |
 | [0002](0002-architecture-hexagonale-monorepo.md)  | Architecture hexagonale en monorepo npm workspaces      | Accepté                  |
-| [0003](0003-conteneur-di-awilix.md)               | Conteneur d'injection de dépendances : awilix           | Accepté                  |
+| [0003](0003-conteneur-di-awilix.md)               | Conteneur d'injection de dépendances : awilix           | Remplacé par 0007        |
 | [0004](0004-resilience-et-mode-degrade.md)        | Résilience et mode dégradé                              | Accepté, amendé par 0006 |
 | [0005](0005-outillage-et-execution-typescript.md) | Outillage qualité et exécution native de TypeScript     | Accepté                  |
 | [0006](0006-quota-sans-p-throttle.md)             | Quota des fournisseurs musicaux sans p-throttle         | Accepté                  |
+| [0007](0007-injection-de-dependances-manuelle.md) | Injection de dépendances manuelle (Pure DI)             | Accepté                  |

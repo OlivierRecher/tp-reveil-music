@@ -91,7 +91,7 @@ par l'utilisateur pour une météo non couverte est un fonctionnement **normal**
 
 | ID        | Critère                                                                                                                                     | Source                        | Validé |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------ |
-| CA-CMP-01 | Toutes les dépendances du cas d'usage sont résolues par le conteneur ; aucun `new` d'implémentation hors de la composition root (lint)      | É « IoC / DI »                | [x]    |
+| CA-CMP-01 | Toutes les dépendances du cas d'usage sont assemblées par la composition root ; aucun `new` d'implémentation hors de celle-ci (lint)        | É « IoC / DI »                | [x]    |
 | CA-CMP-02 | Changer `MUSIC_PROVIDERS` (ex. `musicbrainz,itunes` ou `musicbrainz`) change l'ordre ou la composition de la chaîne sans modifier le code   | É « changer rapidement »      | [x]    |
 | CA-CMP-03 | `POST /api/wake-ups` avec un corps valide renvoie 200 et le rapport de réveil                                                               | É, ADR-0001                   | [x]    |
 | CA-CMP-04 | `POST /api/wake-ups` avec une météo, un jour ou un ID invalide renvoie 400 sans déclencher d'envoi                                          | É                             | [x]    |
