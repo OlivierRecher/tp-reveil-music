@@ -22,16 +22,18 @@ export class FallbackMusicCatalog implements MusicCatalog {
     this.#logger = logger;
   }
 
-  resolve(query: TrackQuery): Promise<Track> {
-    return Promise.reject(
-      new Error('Not implemented', {
-        cause: {
-          query,
-          musicProviders: this.#musicProviders,
-          localMusicProvider: this.#localMusicProvider,
-          logger: this.#logger,
-        },
-      }),
-    );
+  async resolve(query: TrackQuery): Promise<Track> {
+    for (const provider of this.#musicProviders) {
+      try {
+        return await provider.resolve(query);
+      } catch (error) {
+        // Toute erreur, typée ou non, fait basculer sur le maillon suivant : jamais de crash.
+        this.#logger.warn(`Fournisseur musical « ${provider.name} » en échec, bascule`, {
+          provider: provider.name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+    return this.#localMusicProvider.resolve(query);
   }
 }

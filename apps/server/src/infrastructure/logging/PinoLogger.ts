@@ -14,18 +14,18 @@ export class PinoLogger implements Logger {
   }
 
   debug(message: string, context?: LogContext): void {
-    throw new Error('Not implemented', { cause: { pino: this.#pino, message, context } });
+    this.#pino.debug(context ?? {}, message);
   }
 
   info(message: string, context?: LogContext): void {
-    throw new Error('Not implemented', { cause: { pino: this.#pino, message, context } });
+    this.#pino.info(context ?? {}, message);
   }
 
   warn(message: string, context?: LogContext): void {
-    throw new Error('Not implemented', { cause: { pino: this.#pino, message, context } });
+    this.#pino.warn(context ?? {}, message);
   }
 
   error(message: string, context?: LogContext): void {
-    throw new Error('Not implemented', { cause: { pino: this.#pino, message, context } });
+    this.#pino.error(context ?? {}, message);
   }
 }

@@ -1,6 +1,7 @@
 # ADR-0004 — Résilience et mode dégradé
 
 - Statut : Accepté (2026-10-08)
+- Amendé par [ADR-0006](0006-quota-sans-p-throttle.md) : le quota n'utilise plus p-throttle
 
 ## Contexte
 
@@ -21,8 +22,8 @@ FallbackMusicCatalog
 
 - `Resilient` : timeout (`MUSIC_PROVIDER_TIMEOUT_MS`) + circuit breaker via **cockatiel** (MIT, zéro
   dépendance, natif TypeScript). Pas de retry à l'heure du réveil : le maillon suivant est plus rapide.
-- `RateLimited` : **p-throttle** (MIT, zéro dépendance). Au-delà du budget, on échoue immédiatement
-  vers le maillon suivant plutôt que de mettre en file d'attente.
+- `RateLimited` : ~~**p-throttle** (MIT, zéro dépendance)~~ fenêtre glissante interne (voir ADR-0006).
+  Au-delà du budget, on échoue immédiatement vers le maillon suivant plutôt que de mettre en file d'attente.
 - `Cached` : **lru-cache** (BlueOak-1.0.0, permissive, OSI) avec TTL. La clé est la requête normalisée.
 - Filet final dans le cas d'usage : `EmergencyPlaylist` si une exception remonte malgré tout.
 

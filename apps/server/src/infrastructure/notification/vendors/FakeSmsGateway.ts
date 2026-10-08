@@ -27,10 +27,10 @@ export class FakeSmsGateway {
   }
 
   send(phoneNumber: string, text: string): Promise<SmsResult> {
-    return Promise.reject(
-      new Error('Not implemented', {
-        cause: [this.#notificationLog, this.#failing, phoneNumber, text],
-      }),
-    );
+    if (this.#failing) {
+      return Promise.resolve({ status: 'REJECTED' });
+    }
+    this.#notificationLog.write(`[SMS] to=${phoneNumber} text=${text}`);
+    return Promise.resolve({ status: 'QUEUED' });
   }
 }

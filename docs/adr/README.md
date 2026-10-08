@@ -10,3 +10,4 @@ Format : contexte → décision → alternatives → conséquences. Un ADR accep
 | [0003](0003-conteneur-di-awilix.md)               | Conteneur d'injection de dépendances : awilix           | Accepté |
 | [0004](0004-resilience-et-mode-degrade.md)        | Résilience et mode dégradé                              | Accepté |
 | [0005](0005-outillage-et-execution-typescript.md) | Outillage qualité et exécution native de TypeScript     | Accepté |
+| [0006](0006-quota-sans-p-throttle.md)             | Quota des fournisseurs musicaux sans p-throttle         | Accepté |

@@ -1,5 +1,7 @@
 import type { ChannelType, NotificationChannel, Recipient, WakeUpMessage } from '@reveil/core';
-import type { FakeSmsGateway } from './vendors/FakeSmsGateway.ts';
+import { NotificationChannelError } from './NotificationChannelError.ts';
+import { requireAddress } from './requireAddress.ts';
+import type { FakeSmsGateway, SmsResult } from './vendors/FakeSmsGateway.ts';
 
 interface Deps {
   readonly smsGateway: FakeSmsGateway;
@@ -17,9 +19,19 @@ export class SmsChannelAdapter implements NotificationChannel {
     this.#smsGateway = smsGateway;
   }
 
-  send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
-    return Promise.reject(
-      new Error('Not implemented', { cause: [this.#smsGateway, recipient, message] }),
-    );
+  async send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
+    const phoneNumber = requireAddress(this.type, recipient);
+    let result: SmsResult;
+    try {
+      // Le corps se suffit à lui-même (il reprend l'objet) : c'est lui que porte le SMS.
+      result = await this.#smsGateway.send(phoneNumber, message.body);
+    } catch (error) {
+      throw new NotificationChannelError(this.type, 'la passerelle SMS est injoignable', {
+        cause: error,
+      });
+    }
+    if (result.status === 'REJECTED') {
+      throw new NotificationChannelError(this.type, 'la passerelle a renvoyé le statut REJECTED');
+    }
   }
 }

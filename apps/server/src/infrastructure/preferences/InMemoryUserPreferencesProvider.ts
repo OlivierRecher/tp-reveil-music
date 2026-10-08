@@ -13,6 +13,7 @@ export class InMemoryUserPreferencesProvider implements UserPreferencesProvider 
   }
 
   findByUserId(userId: UserId): Promise<UserPreferences | null> {
-    return Promise.reject(new Error('Not implemented', { cause: { seed: this.#seed, userId } }));
+    const found = this.#seed.find((preferences) => preferences.userId.equals(userId));
+    return Promise.resolve(found ?? null);
   }
 }

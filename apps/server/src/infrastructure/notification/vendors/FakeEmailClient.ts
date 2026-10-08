@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { NotificationLog } from '../NotificationLog.ts';
 
 export interface EmailEnvelope {
@@ -30,8 +31,13 @@ export class FakeEmailClient {
   }
 
   sendMail(envelope: EmailEnvelope): Promise<EmailReceipt> {
-    return Promise.reject(
-      new Error('Not implemented', { cause: [this.#notificationLog, this.#failing, envelope] }),
+    if (this.#failing) {
+      return Promise.reject(new Error('Fournisseur e-mail indisponible (panne simulée)'));
+    }
+    const messageId = randomUUID();
+    this.#notificationLog.write(
+      `[EMAIL] id=${messageId} to=${envelope.to} subject=${envelope.subject} html=${envelope.html}`,
     );
+    return Promise.resolve({ messageId });
   }
 }

@@ -27,8 +27,13 @@ export class FakePushService {
   }
 
   push(deviceToken: string, payload: PushPayload, callback: PushCallback): void {
-    throw new Error('Not implemented', {
-      cause: [this.#notificationLog, this.#failing, deviceToken, payload, callback],
-    });
+    if (this.#failing) {
+      callback(new Error('Service push indisponible (panne simulée)'));
+      return;
+    }
+    this.#notificationLog.write(
+      `[PUSH] to=${deviceToken} title=${payload.title} body=${payload.body}`,
+    );
+    callback(null);
   }
 }

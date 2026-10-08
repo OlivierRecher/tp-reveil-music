@@ -1,4 +1,7 @@
 import type { ChannelType, NotificationChannel, Recipient, WakeUpMessage } from '@reveil/core';
+import { escapeHtml } from './escapeHtml.ts';
+import { NotificationChannelError } from './NotificationChannelError.ts';
+import { requireAddress } from './requireAddress.ts';
 import type { FakeEmailClient } from './vendors/FakeEmailClient.ts';
 
 interface Deps {
@@ -17,9 +20,18 @@ export class EmailChannelAdapter implements NotificationChannel {
     this.#emailClient = emailClient;
   }
 
-  send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
-    return Promise.reject(
-      new Error('Not implemented', { cause: [this.#emailClient, recipient, message] }),
-    );
+  async send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
+    const to = requireAddress(this.type, recipient);
+    try {
+      await this.#emailClient.sendMail({
+        to,
+        subject: message.subject,
+        html: `<p>${escapeHtml(message.body)}</p>`,
+      });
+    } catch (error) {
+      throw new NotificationChannelError(this.type, "le client e-mail a rejeté l'envoi", {
+        cause: error,
+      });
+    }
   }
 }

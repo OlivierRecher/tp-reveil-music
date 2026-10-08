@@ -51,15 +51,14 @@ Relevé du **2026-10-08**.
 
 ### Production (`apps/server`)
 
-| Package    | Rôle                                       | Licence       | Version installée | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                                                                                           |
-| ---------- | ------------------------------------------ | ------------- | ----------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| awilix     | Conteneur IoC / DI                         | MIT           | 13.0.5            | 13.0.5 (2026-06-15)    | 🟢        | Sans décorateurs. ⚠️ Exception d'audit GHSA-vfj7-8cjw-p6xm via `fast-glob`, non exploitable (`loadModules` jamais appelé), expire le 2027-01-08 : [ADR-0003](docs/adr/0003-conteneur-di-awilix.md) |
-| fastify    | API HTTP (adaptateur entrant)              | MIT           | 5.12.5            | 5.12.5 (2026-09-16)    | 🟢        |                                                                                                                                                                                                    |
-| zod        | Validation (env, requêtes, réponses d'API) | MIT           | 4.6.5             | 4.6.5 (2026-09-13)     | 🟢        | Zéro dépendance                                                                                                                                                                                    |
-| cockatiel  | Timeout + circuit breaker                  | MIT           | 4.0.0             | 4.0.0 (2026-05-26)     | 🟢        | Zéro dépendance                                                                                                                                                                                    |
-| p-throttle | Quota iTunes (~20 req/min) et MusicBrainz  | MIT           | 8.1.1             | 8.1.1 (2026-09-12)     | 🟢        | Zéro dépendance, ESM uniquement                                                                                                                                                                    |
-| lru-cache  | Cache des recherches musicales (TTL)       | BlueOak-1.0.0 | 11.5.3            | 11.5.3 (2026-09-18)    | 🟢        | Licence peu courante mais **permissive** (approuvée OSI, sans copyleft, clause de brevets) : autorisée par la politique                                                                            |
-| pino       | Logs structurés                            | MIT           | 10.4.0            | 10.4.0 (2026-10-02)    | 🟢        | Déjà embarqué par Fastify : une seule bibliothèque de logs                                                                                                                                         |
+| Package   | Rôle                                       | Licence       | Version installée | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                                                                                           |
+| --------- | ------------------------------------------ | ------------- | ----------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| awilix    | Conteneur IoC / DI                         | MIT           | 13.0.5            | 13.0.5 (2026-06-15)    | 🟢        | Sans décorateurs. ⚠️ Exception d'audit GHSA-vfj7-8cjw-p6xm via `fast-glob`, non exploitable (`loadModules` jamais appelé), expire le 2027-01-08 : [ADR-0003](docs/adr/0003-conteneur-di-awilix.md) |
+| fastify   | API HTTP (adaptateur entrant)              | MIT           | 5.12.5            | 5.12.5 (2026-09-16)    | 🟢        |                                                                                                                                                                                                    |
+| zod       | Validation (env, requêtes, réponses d'API) | MIT           | 4.6.5             | 4.6.5 (2026-09-13)     | 🟢        | Zéro dépendance                                                                                                                                                                                    |
+| cockatiel | Timeout + circuit breaker                  | MIT           | 4.0.0             | 4.0.0 (2026-05-26)     | 🟢        | Zéro dépendance                                                                                                                                                                                    |
+| lru-cache | Cache des recherches musicales (TTL)       | BlueOak-1.0.0 | 11.5.3            | 11.5.3 (2026-09-18)    | 🟢        | Licence peu courante mais **permissive** (approuvée OSI, sans copyleft, clause de brevets) : autorisée par la politique                                                                            |
+| pino      | Logs structurés                            | MIT           | 10.4.0            | 10.4.0 (2026-10-02)    | 🟢        | Déjà embarqué par Fastify : une seule bibliothèque de logs                                                                                                                                         |
 
 `packages/core` : **aucune dépendance**, par construction (vérifié par dependency-cruiser).
 
@@ -82,7 +81,7 @@ Relevé du **2026-10-08**.
 | vite-plugin-pwa             | web       | Manifest + service worker        | MIT          | 2.0.0              | 2.0.0 (2026-10-03)     | 🟢        | S'appuie sur Workbox (Google, MIT)                                                                                            |
 | workbox-window              | web       | Enregistrement du service worker | MIT          | 7.4.1              | 7.4.1 (2026-05-04)     | 🟢        | Pair requis par vite-plugin-pwa                                                                                               |
 
-**Dépendances transitives** (655 paquets analysés au 2026-10-08, dont 69 de production) : toutes conformes à
+**Dépendances transitives** (654 paquets analysés au 2026-10-08, dont 68 de production) : toutes conformes à
 `license-policy.json`. En production : MIT, ISC, BSD-3-Clause et BlueOak-1.0.0 (famille `lru-cache`)
 uniquement. Seuls des outils de développement embarquent des licences autorisées hors produit livré :
 `MPL-2.0` (`lightningcss`, via Vite : copyleft faible au niveau du fichier, sans effet sur notre code
@@ -91,19 +90,20 @@ puisque non modifié et non distribué), `CC-BY-3.0`/`CC-BY-4.0` (données SPDX 
 
 ### Composants évalués et écartés
 
-| Composant                  | Raison                                                                                                                            |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| TypeScript 7.0             | incompatible avec typescript-eslint à ce jour (voir ci-dessus)                                                                    |
-| InversifyJS, tsyringe      | décorateurs, incompatibles avec l'exécution native de TypeScript ; tsyringe moins actif (2025-04)                                 |
-| bottleneck                 | 🔴 dernière version en 2019                                                                                                       |
-| license-checker            | 🔴 dernière version en 2019 (remplacé par son fork maintenu)                                                                      |
-| audit-ci, better-npm-audit | 🟠 dernières versions en 2024 ; audit-ci dépend d'`event-stream` (incident de supply chain en 2018) → script interne de 40 lignes |
-| husky / lint-staged        | husky 🟠 (2024-11) ; la CI et `npm run verify` suffisent                                                                          |
-| axios, node-fetch          | `fetch` natif suffisant                                                                                                           |
-| tsx, ts-node               | Node exécute TypeScript nativement                                                                                                |
-| msw, nock                  | inutiles : `fetch` est injecté dans les adaptateurs                                                                               |
-| opossum                    | valable (Apache-2.0, frais) mais cockatiel couvre timeout + breaker sans dépendance                                               |
-| React / Vue                | surdimensionné pour un formulaire de démonstration                                                                                |
+| Composant                  | Raison                                                                                                                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript 7.0             | incompatible avec typescript-eslint à ce jour (voir ci-dessus)                                                                                                                                     |
+| InversifyJS, tsyringe      | décorateurs, incompatibles avec l'exécution native de TypeScript ; tsyringe moins actif (2025-04)                                                                                                  |
+| bottleneck                 | 🔴 dernière version en 2019                                                                                                                                                                        |
+| p-throttle                 | 🟢 frais (MIT) mais met les appels en file au lieu d'échouer immédiatement hors quota ; désinstallé au profit d'une fenêtre glissante interne : [ADR-0006](docs/adr/0006-quota-sans-p-throttle.md) |
+| license-checker            | 🔴 dernière version en 2019 (remplacé par son fork maintenu)                                                                                                                                       |
+| audit-ci, better-npm-audit | 🟠 dernières versions en 2024 ; audit-ci dépend d'`event-stream` (incident de supply chain en 2018) → script interne de 40 lignes                                                                  |
+| husky / lint-staged        | husky 🟠 (2024-11) ; la CI et `npm run verify` suffisent                                                                                                                                           |
+| axios, node-fetch          | `fetch` natif suffisant                                                                                                                                                                            |
+| tsx, ts-node               | Node exécute TypeScript nativement                                                                                                                                                                 |
+| msw, nock                  | inutiles : `fetch` est injecté dans les adaptateurs                                                                                                                                                |
+| opossum                    | valable (Apache-2.0, frais) mais cockatiel couvre timeout + breaker sans dépendance                                                                                                                |
+| React / Vue                | surdimensionné pour un formulaire de démonstration                                                                                                                                                 |
 
 ### API externes
 

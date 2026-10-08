@@ -27,10 +27,18 @@ export class LogChannel implements NotificationChannel {
   }
 
   send(recipient: Recipient, message: WakeUpMessage): Promise<void> {
-    return Promise.reject(
-      new Error('Not implemented', {
-        cause: [this.#notificationLog, this.#logger, recipient, message],
-      }),
-    );
+    const userId = recipient.userId.value;
+    try {
+      this.#notificationLog.write(`[LOG] user=${userId} ${message.subject} ${message.body}`);
+    } catch (error) {
+      // Jamais de silence : le message reste lisible dans le journal applicatif.
+      this.#logger.error('Canal LOG : journal des notifications indisponible', {
+        userId,
+        subject: message.subject,
+        body: message.body,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+    return Promise.resolve();
   }
 }
