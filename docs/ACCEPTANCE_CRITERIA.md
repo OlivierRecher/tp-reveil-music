@@ -36,15 +36,20 @@ Sources : **É** = énoncé · **ADR-n** · **H** = hypothèse (ARCHITECTURE §6
 
 | ID        | Critère                                                                                                                                                       | Source                        | Validé |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------ |
-| CA-APP-01 | Nominal : un appel `(userId, jour, météo)` envoie exactement une notification, sur le canal préféré, avec le morceau choisi                                   | É                             | [ ]    |
-| CA-APP-02 | Le cas d'usage ne dépend que d'interfaces (ports) : il est testable avec des doublures écrites à la main, sans réseau ni conteneur                            | É « Isolation », « IoC / DI » | [ ]    |
-| CA-APP-03 | Si le catalogue musical lève une erreur, une notification est **quand même** envoyée avec un morceau de secours local, et le rapport indique `degraded: true` | É « un silence ne l'est pas » | [ ]    |
-| CA-APP-04 | Si le canal préféré échoue, la notification est envoyée sur un autre canal disponible pour cet utilisateur ; le rapport liste la tentative échouée            | É « Fiabilité »               | [ ]    |
-| CA-APP-05 | Si tous les canaux échouent, le canal de dernier recours (journal) reçoit le message ; le cas d'usage ne lève pas d'exception                                 | É « jamais empêcher l'envoi » | [ ]    |
-| CA-APP-06 | Si le service de préférences est en panne ou l'utilisateur inconnu, un réveil est quand même émis (préférences par défaut), `degraded: true`                  | É, H                          | [ ]    |
-| CA-APP-07 | En fonctionnement nominal, le rapport indique `degraded: false`                                                                                               | ADR-0004                      | [ ]    |
-| CA-APP-08 | Toute bascule en mode dégradé est journalisée au niveau `warn`                                                                                                | ADR-0004                      | [ ]    |
-| CA-APP-09 | Un canal n'est tenté que si l'utilisateur possède la coordonnée correspondante                                                                                | H                             | [ ]    |
+| CA-APP-01 | Nominal : un appel `(userId, jour, météo)` envoie exactement une notification, sur le canal préféré, avec le morceau choisi                                   | É                             | [x]    |
+| CA-APP-02 | Le cas d'usage ne dépend que d'interfaces (ports) : il est testable avec des doublures écrites à la main, sans réseau ni conteneur                            | É « Isolation », « IoC / DI » | [x]    |
+| CA-APP-03 | Si le catalogue musical lève une erreur, une notification est **quand même** envoyée avec un morceau de secours local, et le rapport indique `degraded: true` | É « un silence ne l'est pas » | [x]    |
+| CA-APP-04 | Si le canal préféré échoue, la notification est envoyée sur un autre canal disponible pour cet utilisateur ; le rapport liste la tentative échouée            | É « Fiabilité »               | [x]    |
+| CA-APP-05 | Si tous les canaux échouent, le canal de dernier recours (journal) reçoit le message ; le cas d'usage ne lève pas d'exception                                 | É « jamais empêcher l'envoi » | [x]    |
+| CA-APP-06 | Si le service de préférences est en panne ou l'utilisateur inconnu, un réveil est quand même émis (préférences par défaut), `degraded: true`                  | É, H                          | [x]    |
+| CA-APP-07 | En fonctionnement nominal, le rapport indique `degraded: false`                                                                                               | ADR-0004                      | [x]    |
+| CA-APP-08 | Toute bascule en mode dégradé est journalisée au niveau `warn`                                                                                                | ADR-0004                      | [x]    |
+| CA-APP-09 | Un canal n'est tenté que si l'utilisateur possède la coordonnée correspondante                                                                                | H                             | [x]    |
+
+Précision (décision d'équipe, 2026-10-08) : le rapport est `degraded: true` dès qu'une bascule a eu
+lieu, c'est-à-dire préférences par défaut, morceau de source locale (renvoyé par le catalogue ou tiré
+de `EmergencyPlaylist`), ou livraison sur un autre canal que le préféré. Un morceau de secours choisi
+par l'utilisateur pour une météo non couverte est un fonctionnement **normal** (`degraded: false`).
 
 ## Phase 3 — Adaptateurs
 
