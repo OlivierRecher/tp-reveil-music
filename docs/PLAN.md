@@ -121,7 +121,7 @@ Implémentation :
 ## Phase 4 — Composition root et points d'entrée
 
 - [x] 🧪 Critères CA-CMP-01 à 05 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits : résolution par le conteneur, changement de fournisseur par
+- [x] 🧪 Tests d'acceptation écrits : résolution par le conteneur, changement de fournisseur par
       configuration, tests HTTP via `fastify.inject()` (sans réseau), scénario « tout en panne », échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
