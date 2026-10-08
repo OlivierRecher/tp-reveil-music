@@ -83,3 +83,19 @@ describe('UserPreferences (immutabilité)', () => {
     expect(preferences.contactFor('SMS')).toBe('+33600000000');
   });
 });
+
+describe('UserPreferences (normalisation des coordonnées)', () => {
+  it('une coordonnée vide ou blanche est considérée absente, les autres sont épurées', () => {
+    const preferences = UserPreferences.create({
+      userId: UserId.parse('user-42'),
+      tracksByWeather: {},
+      fallbackTrack: TrackQuery.create({ title: 'Wake Me Up' }),
+      preferredChannel: 'EMAIL',
+      contacts: { EMAIL: '   ', SMS: '', PUSH: ' token-42 ' },
+    });
+
+    expect(preferences.contactFor('EMAIL')).toBeUndefined();
+    expect(preferences.contactFor('SMS')).toBeUndefined();
+    expect(preferences.contactFor('PUSH')).toBe('token-42');
+  });
+});

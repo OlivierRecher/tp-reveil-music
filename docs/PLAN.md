@@ -23,7 +23,7 @@ viennent de `docs/ACCEPTANCE_CRITERIA.md`, jamais du code (déroulé complet dan
       expirables, CI GitHub Actions
 - [x] Documentation : CLAUDE.md, ARCHITECTURE, DEPENDENCY_POLICY, ADR, PLAN, README
 - [x] Critères d'acceptation des phases 1 à 4 rédigés (`docs/ACCEPTANCE_CRITERIA.md`)
-- [x] Premier commit d’initialisation + création du dépôt distant
+- [x] Premier commit d'initialisation + création du dépôt distant
 
 ## Phase 1 — Domaine (`packages/core/src/domain`)
 

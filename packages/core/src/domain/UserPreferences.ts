@@ -1,3 +1,4 @@
+import { CHANNEL_TYPES } from './ChannelType.ts';
 import type { ChannelType } from './ChannelType.ts';
 import { TrackQuery } from './TrackQuery.ts';
 import type { UserId } from './UserId.ts';
@@ -31,9 +32,10 @@ export class UserPreferences {
     this.#tracksByWeather = Object.freeze({ ...props.tracksByWeather });
     this.#fallbackTrack = props.fallbackTrack;
     this.#preferredChannel = props.preferredChannel;
-    this.#contacts = Object.freeze({ ...props.contacts });
+    this.#contacts = Object.freeze(normalizeContacts(props.contacts));
   }
 
+  /** Une coordonnée vide ou blanche est considérée absente (canal indisponible, ARCHITECTURE §6). */
   static create(props: UserPreferencesProps): UserPreferences {
     return new UserPreferences(props);
   }
@@ -68,4 +70,17 @@ export class UserPreferences {
   contactFor(channel: ChannelType): string | undefined {
     return this.#contacts[channel];
   }
+}
+
+function normalizeContacts(
+  contacts: Partial<Readonly<Record<ChannelType, string>>>,
+): Partial<Record<ChannelType, string>> {
+  const normalized: Partial<Record<ChannelType, string>> = {};
+  for (const channel of CHANNEL_TYPES) {
+    const address = contacts[channel]?.trim();
+    if (address !== undefined && address !== '') {
+      normalized[channel] = address;
+    }
+  }
+  return normalized;
 }
