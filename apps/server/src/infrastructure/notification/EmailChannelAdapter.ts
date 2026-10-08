@@ -1,20 +1,20 @@
 import type { ChannelType, NotificationChannel, Recipient, WakeUpMessage } from '@reveil/core';
+import type { EmailClient } from './EmailClient.ts';
 import { escapeHtml } from './escapeHtml.ts';
 import { NotificationChannelError } from './NotificationChannelError.ts';
 import { requireAddress } from './requireAddress.ts';
-import type { FakeEmailClient } from './vendors/FakeEmailClient.ts';
 
 interface Deps {
-  readonly emailClient: FakeEmailClient;
+  readonly emailClient: EmailClient;
 }
 
 /**
- * Adapter : ramène l'API à promesse du client e-mail à `NotificationChannel`. Le corps est
+ * Adapter : ramène l'API à promesse d'un client e-mail (`EmailClient`) à `NotificationChannel`. Le corps est
  * échappé avant d'être placé dans le HTML ; tout rejet devient une `NotificationChannelError`.
  */
 export class EmailChannelAdapter implements NotificationChannel {
   readonly type: ChannelType = 'EMAIL';
-  readonly #emailClient: FakeEmailClient;
+  readonly #emailClient: EmailClient;
 
   constructor({ emailClient }: Deps) {
     this.#emailClient = emailClient;

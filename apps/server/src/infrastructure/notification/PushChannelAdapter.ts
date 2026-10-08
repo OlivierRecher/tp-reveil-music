@@ -1,19 +1,19 @@
 import type { ChannelType, NotificationChannel, Recipient, WakeUpMessage } from '@reveil/core';
 import { NotificationChannelError } from './NotificationChannelError.ts';
+import type { PushService } from './PushService.ts';
 import { requireAddress } from './requireAddress.ts';
-import type { FakePushService } from './vendors/FakePushService.ts';
 
 interface Deps {
-  readonly pushService: FakePushService;
+  readonly pushService: PushService;
 }
 
 /**
- * Adapter : ramène l'API à callback du service push à `NotificationChannel` (promesse). Un
+ * Adapter : ramène l'API à callback d'un service push (`PushService`) à `NotificationChannel` (promesse). Un
  * `callback(erreur)` (ou une exception) devient une `NotificationChannelError`.
  */
 export class PushChannelAdapter implements NotificationChannel {
   readonly type: ChannelType = 'PUSH';
-  readonly #pushService: FakePushService;
+  readonly #pushService: PushService;
 
   constructor({ pushService }: Deps) {
     this.#pushService = pushService;

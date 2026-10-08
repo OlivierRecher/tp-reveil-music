@@ -1,11 +1,5 @@
 import type { NotificationLog } from '../NotificationLog.ts';
-
-export const SMS_STATUSES = ['QUEUED', 'REJECTED'] as const;
-export type SmsStatus = (typeof SMS_STATUSES)[number];
-
-export interface SmsResult {
-  readonly status: SmsStatus;
-}
+import type { SmsGateway, SmsResult } from '../SmsGateway.ts';
 
 interface Deps {
   readonly notificationLog: NotificationLog;
@@ -17,7 +11,7 @@ interface Deps {
  * Mock d'une passerelle SMS (style API à statut) : écrit l'envoi dans le journal, sans envoi
  * réel. En panne, la promesse est résolue avec `{ status: 'REJECTED' }` (aucune exception).
  */
-export class FakeSmsGateway {
+export class FakeSmsGateway implements SmsGateway {
   readonly #notificationLog: NotificationLog;
   readonly #failing: boolean;
 
