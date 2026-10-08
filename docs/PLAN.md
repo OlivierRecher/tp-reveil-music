@@ -178,7 +178,7 @@ Implémentation :
       — 2026-10-08 : règle ESLint anti-`new` étendue (`TriggerWakeUp`, `PinoLogger`, `FileNotificationLog`
       n'étaient pas couverts), `pino-pretty` branché sur `dev:server`, documentation alignée (ajout d'un
       canal = adaptateur + valeur de `ChannelType` + enregistrement) ; points restants à arbitrer par l'équipe
-- [ ] Tag `v1.0.0`
+- [x] Tag `v1.0.0`
 
 ---
 
