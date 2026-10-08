@@ -40,42 +40,68 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 
 ## 2. Flux de l'appel `TriggerWakeUp.execute({ userId, dayOfWeek, weather })`
 
+Les entrées sont des value objects déjà validés par l'adaptateur entrant : `userId: UserId`,
+`dayOfWeek: DayOfWeek`, `weather: WeatherType` (`WakeUpCommand`). Le cas d'usage ne lève jamais :
+chaque bascule est journalisée en `warn` (avec `userId` et `reason`) et rend le rapport `degraded`.
+
 1. **Préférences** : `UserPreferencesProvider.findByUserId(userId)`.
-   Panne ou utilisateur inconnu → préférences par défaut (morceau de secours générique, canal par
-   défaut), `degraded = true`.
-2. **Sélection** (domaine pur) : `TrackSelectionPolicy` renvoie la `TrackQuery` associée à la météo,
-   sinon le morceau de secours de l'utilisateur.
+   Panne ou utilisateur inconnu (`null`) → `UserPreferences.createDefault(userId)` (morceau de secours
+   générique, canal `LOG`, aucune coordonnée), `degraded = true`.
+2. **Sélection** (domaine pur) : `TrackSelectionPolicy.select(preferences, weather, dayOfWeek)` renvoie
+   la `TrackQuery` associée à la météo, sinon le morceau de secours de l'utilisateur (fonctionnement
+   **normal**, pas dégradé).
 3. **Résolution** : `MusicCatalog.resolve(query)` → `Track`. L'implémentation est une chaîne
    (`FallbackMusicCatalog`) : iTunes → MusicBrainz → fallback local, chaque maillon décoré par
-   cache, limitation de débit et timeout/circuit breaker. Si malgré tout une exception remonte, le cas
-   d'usage prend un morceau dans `EmergencyPlaylist` (double filet de sécurité, la chaîne étant de
-   l'infrastructure).
+   cache, limitation de débit et timeout/circuit breaker. Un morceau de source `local` renvoyé par la
+   chaîne est une bascule (`degraded = true`). Si malgré tout une exception remonte, le cas d'usage
+   prend `EmergencyPlaylist.pick(weather)` (double filet de sécurité, la chaîne étant de
+   l'infrastructure), `degraded = true`.
 4. **Message** (domaine) : `WakeUpMessage.compose(track, dayOfWeek, weather)` (« Bon lundi ! Il pleut… »).
-5. **Envoi** : `NotificationDispatcher.dispatch(preferredChannel, recipient, message)` essaie le canal
-   préféré, puis les autres canaux enregistrés, puis `LogChannel` (écriture fichier, ne lève jamais).
-6. **Résultat** : `WakeUpReport { track, trackSource, deliveredVia, attempts[], degraded }` journalisé
-   et renvoyé à l'appelant.
+5. **Envoi** : `NotificationDispatcher.dispatch(preferences, message)` → `DispatchResult
+{ deliveredVia, attempts }`. Ordre : canal préféré (s'il est enregistré et que l'utilisateur en a la
+   coordonnée), puis les autres canaux enregistrés pour lesquels il a une coordonnée (ordre
+   d'enregistrement, sans re-tenter le préféré), puis `lastResortChannel` (`LogChannel`, adressé à
+   `userId.value`). Chaque tentative est journalisée (`debug` avant, `info` si livrée, `warn` si échec).
+   Si le dernier recours lève malgré son contrat : `error` journalisé, tentative en échec,
+   `deliveredVia` = type du dernier recours, aucune exception. Livraison hors du canal préféré ou
+   tentative en échec → `degraded = true`.
+6. **Résultat** : `WakeUpReport { userId, dayOfWeek, weather, track, trackSource, deliveredVia,
+attempts[], degraded }` journalisé (`info`) et renvoyé à l'appelant.
 
-## 3. Ports (contrats du noyau) — esquisse
+## 3. Ports (contrats du noyau)
 
 ```ts
 interface UserPreferencesProvider {
+  /** `null` si l'utilisateur est inconnu ; rejette si le service est en panne. */
   findByUserId(userId: UserId): Promise<UserPreferences | null>;
 }
 interface MusicCatalog {
   resolve(query: TrackQuery): Promise<Track>; // Track = { title, artist, link?, source }
 }
 interface EmergencyPlaylist {
-  pick(): Track; // synchrone, ne peut pas échouer
+  pick(weather: WeatherType): Track; // synchrone, ne peut pas échouer
 }
 interface NotificationChannel {
-  readonly type: ChannelType; // 'EMAIL' | 'SMS' | 'PUSH' | 'LOG' ...
-  send(recipient: Recipient, message: WakeUpMessage): Promise<void>;
+  readonly type: ChannelType; // 'EMAIL' | 'SMS' | 'PUSH' | 'LOG'
+  send(recipient: Recipient, message: WakeUpMessage): Promise<void>; // Recipient = { userId, address }
 }
+type LogContext = Readonly<Record<string, unknown>>;
 interface Logger {
-  info(msg: string, ctx?: object): void;
-  warn(msg: string, ctx?: object): void;
-  error(msg: string, ctx?: object): void;
+  debug(message: string, context?: LogContext): void;
+  info(message: string, context?: LogContext): void;
+  warn(message: string, context?: LogContext): void;
+  error(message: string, context?: LogContext): void;
+}
+```
+
+Services applicatifs (classes du noyau, injectées par awilix) :
+
+```ts
+class NotificationDispatcher {
+  dispatch(preferences: UserPreferences, message: WakeUpMessage): Promise<DispatchResult>;
+}
+class TriggerWakeUp {
+  execute(command: WakeUpCommand): Promise<WakeUpReport>; // { userId: UserId, dayOfWeek, weather }
 }
 ```
 

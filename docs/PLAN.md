@@ -49,19 +49,19 @@ Implémentation :
 > logique, nécessaires pour écrire les doublures.
 
 - [x] 🧪 Critères CA-APP-01 à 09 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits avec doublures écrites à la main ; scénarios : nominal, météo non couverte,
+- [x] 🧪 Tests d'acceptation écrits avec doublures écrites à la main ; scénarios : nominal, météo non couverte,
       préférences en panne, utilisateur inconnu, catalogue en panne, canal préféré en panne, tous les
       canaux en panne, rapport `degraded`, échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
 Implémentation :
 
-- [ ] Ports `UserPreferencesProvider`, `MusicCatalog`, `EmergencyPlaylist`, `NotificationChannel`,
+- [x] Ports `UserPreferencesProvider`, `MusicCatalog`, `EmergencyPlaylist`, `NotificationChannel`,
       `Logger` finalisés (créés à l'étape des tests, voir ARCHITECTURE §3)
-- [ ] `NotificationDispatcher` : canal préféré → autres canaux disponibles → canal de dernier recours ;
+- [x] `NotificationDispatcher` : canal préféré → autres canaux disponibles → canal de dernier recours ;
       journalise chaque tentative 🎯
-- [ ] Cas d'usage `TriggerWakeUp` : orchestration complète, mode dégradé à chaque étape, ne lève jamais 🎯
-- [ ] Export de l'API publique dans `src/index.ts`
+- [x] Cas d'usage `TriggerWakeUp` : orchestration complète, mode dégradé à chaque étape, ne lève jamais 🎯
+- [x] Export de l'API publique dans `src/index.ts`
 
 ## Phase 3 — Adaptateurs d'infrastructure (`apps/server/src/infrastructure`)
 
