@@ -1,129 +1,200 @@
 # Réveil musical
 
-Service qui réveille chaque utilisateur avec un morceau choisi selon le jour de la semaine et la météo,
-puis le notifie sur le canal de son choix (email, SMS, push), avec un **mode dégradé garanti** : une
-panne d'un fournisseur ne produit jamais de silence.
+Service qui réveille chaque utilisateur avec un morceau choisi selon **la météo du jour**, puis le
+prévient sur **son canal préféré** (email, SMS, push). Une panne d'un fournisseur ne produit jamais de
+silence : le service bascule en **mode dégradé**, le journalise et le signale.
 
-TP IMT S5 : gestion des dépendances. Énoncé : [`TP_reveil_musical.pdf`](TP_reveil_musical.pdf).
+TP IMT S5, cours de **gestion des dépendances**. Énoncé : [`TP_reveil_musical.pdf`](TP_reveil_musical.pdf).
 
-## Démarrage rapide
+| Pour…                                     | Lire                                                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| installer, lancer et tester pas à pas     | [`docs/DEMARRAGE.md`](docs/DEMARRAGE.md)                                                       |
+| comprendre l'architecture et les patterns | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                                 |
+| connaître les décisions et leurs raisons  | [`docs/adr/`](docs/adr/README.md) (ADR-0001 à 0006)                                            |
+| ajouter une dépendance                    | [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md)                                       |
+| savoir ce que les tests prouvent          | [`docs/ACCEPTANCE_CRITERIA.md`](docs/ACCEPTANCE_CRITERIA.md), [`docs/TESTS.md`](docs/TESTS.md) |
+| suivre l'avancement                       | [`docs/PLAN.md`](docs/PLAN.md)                                                                 |
+| contribuer (règles, conventions)          | [`CLAUDE.md`](CLAUDE.md)                                                                       |
+
+## Ce que fait le service
+
+Un seul appel, `triggerWakeUp(userId, dayOfWeek, weather)`, exposé par une API HTTP
+(`POST /api/wake-ups`), un script CLI (`npm run wake`) et un client PWA de démonstration :
+
+1. **Préférences** : lit les goûts de l'utilisateur (un morceau par météo, un morceau de secours, un canal).
+2. **Sélection** : règle métier pure, le morceau associé à la météo, sinon le morceau de secours.
+3. **Résolution** : cherche le morceau chez iTunes, puis MusicBrainz, puis dans une playlist locale.
+4. **Notification** : envoie le message sur le canal préféré, puis les autres, puis le journal.
+5. **Rapport** : morceau, source, canal utilisé, chaque tentative et l'indicateur `degraded`.
+
+Chaque panne prévue par l'énoncé a sa réponse, testée et démontrable sans toucher au code
+(`SIMULATED_FAILURES`, voir [`docs/DEMARRAGE.md`](docs/DEMARRAGE.md#démontrer-le-mode-dégradé)) :
+
+| Panne                                 | Réponse                                                               |
+| ------------------------------------- | --------------------------------------------------------------------- |
+| service de préférences                | préférences par défaut, remise par le canal `LOG`                     |
+| un fournisseur musical                | fournisseur suivant de la chaîne (cache, quota, timeout, disjoncteur) |
+| tous les fournisseurs                 | playlist locale, qui ne peut pas échouer                              |
+| canal préféré (ou coordonnée absente) | autres canaux de l'utilisateur, puis `LOG` en dernier recours         |
+
+## Démarrage express
+
+Node.js 24 ou plus (voir `.nvmrc`).
 
 ```bash
-nvm use                 # Node 26 (>= 24 requis)
 npm install
-cp .env.example .env    # renseigner MUSICBRAINZ_USER_AGENT avec un contact réel
-npm run dev:server      # API : http://localhost:3000 (journal mis en forme par pino-pretty)
-npm run dev:web         # PWA : http://localhost:5173
-npm run build:web       # PWA de production (manifest + service worker) dans apps/web/dist
+cp .env.example .env    # renseigner MUSICBRAINZ_USER_AGENT avec une adresse de contact réelle
+npm run dev:server      # terminal 1 — API sur http://localhost:3000
+npm run dev:web         # terminal 2 — PWA sur http://localhost:5173 (utilisateurs u1 à u4)
 npm run verify          # format, lint, types, architecture, tests + couverture, licences, audit
 ```
 
-Déclencher un réveil sans serveur (script de démonstration ; la trace de l'envoi simulé puis le
-rapport JSON sortent sur la sortie standard, le journal pino sur la sortie d'erreur ; code de sortie 1
-si un argument est invalide) :
+Avertissements attendus à l'installation, jeu de données, appels `curl`, CLI et démonstration du mode
+dégradé : [`docs/DEMARRAGE.md`](docs/DEMARRAGE.md).
 
-```bash
-npm run wake -- --user u1 --day LUNDI --weather PLUIE
+## Architecture en bref
+
+Hexagonale (Ports & Adapters) dans un monorepo npm workspaces. Le métier ne dépend de rien ; tout le
+reste dépend de lui.
+
+```
+apps/web (PWA) ── HTTP ──► apps/server
+                           ├─ http/, cli/          adaptateurs entrants
+                           │        │ appellent
+                           │        ▼
+                           │  packages/core        domaine + cas d'usage, aucune dépendance npm
+                           │        ▲ implémentent ses ports
+                           │        │
+                           ├─ infrastructure/      iTunes, MusicBrainz, local, canaux, logs
+                           └─ composition/         seul endroit qui connaît les classes concrètes (awilix)
 ```
 
-Par l'API HTTP :
+| Workspace       | Rôle                                                                         | Dépendances runtime                              |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| `packages/core` | domaine, ports, cas d'usage `TriggerWakeUp`, `NotificationDispatcher`        | **aucune** (vérifié par dependency-cruiser)      |
+| `apps/server`   | adaptateurs iTunes / MusicBrainz / local, mocks de notification, API Fastify | awilix, fastify, zod, cockatiel, lru-cache, pino |
+| `apps/web`      | client PWA de démonstration (formulaire, rapport, mode dégradé, hors ligne)  | zod (`zod/mini`)                                 |
 
-```bash
-curl -X POST http://localhost:3000/api/wake-ups \
-  -H 'content-type: application/json' \
-  -d '{"userId":"u1","dayOfWeek":"LUNDI","weather":"PLUIE"}'
-# 200 : { userId, dayOfWeek, weather, track: { title, artist, link?, source }, trackSource,
-#         deliveredVia, attempts: [{ channel, success, error? }], degraded }
-# 400 : { "error": "INVALID_REQUEST", "details": [{ "field": "weather", "message": "Météo invalide…" }] }
-# 500 : { "error": "INTERNAL_ERROR" } (détail uniquement dans le journal)
+Patterns : Adapter (anti-corruption des API), Decorator (cache, quota, résilience), Chain of
+Responsibility (fallbacks), Strategy (sélection), Registry (canaux), injection de dépendances. Changer de
+fournisseur musical = modifier `MUSIC_PROVIDERS` ; ajouter un canal = un adaptateur et une ligne
+d'enregistrement. Détails, flux complet et traçabilité des exigences :
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-curl http://localhost:3000/health   # { "status": "ok" }
-```
+## Qualité et tests
 
-Utilisateurs du jeu de données : `u1` (EMAIL), `u2` (SMS, préférences partielles), `u3` (PUSH),
-`u4` (SMS sans numéro). Jours : `LUNDI` … `DIMANCHE` ; météos : `SOLEIL`, `PLUIE`, `NEIGE`, `NUAGEUX`.
+Les tests sont écrits **avant** le code, à partir de 49 critères d'acceptation tirés de l'énoncé
+(`[CA-APP-03] envoie un morceau local quand le catalogue est en panne`…). 477 tests Vitest, sans aucun
+accès réseau (le `fetch` est injecté, les réponses réelles d'iTunes et MusicBrainz sont des fixtures).
+Couverture : **99,6 % lignes, 96,7 % branches** (seuils bloquants 90 / 85 %). La CI GitHub Actions
+rejoue `npm run verify` à chaque PR. Détails et branches non couvertes justifiées :
+[`docs/TESTS.md`](docs/TESTS.md).
 
-### Démontrer le mode dégradé
+## Gestion des dépendances
 
-`SIMULATED_FAILURES` (liste séparée par virgules) met en panne des dépendances choisies, sans toucher
-au code : `preferences`, `itunes`, `musicbrainz` (le `fetch` du fournisseur rejette, aucun appel
-réseau), `email`, `sms`, `push` (le mock du fournisseur échoue).
+L'énoncé pose une exigence légale : _« aucun composant externe ne doit être intégré sans vérification
+préalable de sa licence et de sa fraîcheur »_. Le projet y répond par une démarche (quand prendre une
+dépendance), une procédure (comment la vérifier) et des contrôles automatiques (comment s'assurer
+qu'elle reste conforme).
 
-```bash
-SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push \
-  npm run wake -- --user u1 --day LUNDI --weather PLUIE
-# → morceau local, remise par le canal LOG, "degraded": true, avertissements (warn) au journal
-```
+### 1. Prendre une dépendance… ou pas
 
-`MUSIC_PROVIDERS` change l'ordre ou la composition de la chaîne musicale (`musicbrainz,itunes`,
-`musicbrainz`, ou vide pour le seul fallback local). Les envois simulés sont écrits dans
-`NOTIFICATION_LOG_FILE` (chemin relatif au dossier `apps/server` avec les scripts npm ; `logs/` est
-ignoré par git). Toutes les variables : [`.env.example`](.env.example).
+La question n'est pas « existe-t-il un paquet ? », mais « le problème justifie-t-il le coût d'une
+dépendance ? » (licence à suivre, mises à jour, surface d'attaque, dépendances transitives). Grille
+appliquée ([`DEPENDENCY_POLICY.md` § 1](docs/DEPENDENCY_POLICY.md#1-faut-il-une-dépendance-)) :
 
-## Architecture
+| Situation                                | Décision                  | Exemples dans le projet                                                                        |
+| ---------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------- |
+| la plateforme le fait déjà               | **pas de dépendance**     | `fetch` natif (pas d'axios), TypeScript exécuté par Node (pas de tsx), `node:util.parseArgs`   |
+| quelques lignes sans piège               | **pas de dépendance**     | quota à fenêtre glissante ([ADR-0006](docs/adr/0006-quota-sans-p-throttle.md)), script d'audit |
+| problème connu et piégeux                | **bibliothèque éprouvée** | cache LRU/TTL, circuit breaker, validation de schéma, conteneur DI, serveur HTTP, logs         |
+| besoin limité aux tests ou à l'outillage | **devDependency**         | Vitest, ESLint, Vite, dependency-cruiser                                                       |
+| code métier                              | **jamais**                | `packages/core` n'a aucune dépendance : le métier survit à tout changement de bibliothèque     |
 
-Hexagonale (Ports & Adapters) en monorepo npm workspaces. Le noyau `@reveil/core` n'a **aucune
-dépendance** ; seule la composition root (`apps/server/src/composition`) connaît les implémentations
-concrètes, injectées par awilix. Détails : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et
-[ADR](docs/adr/README.md).
+Résultat : **6 dépendances de production** côté serveur, 1 côté web, chacune répondant à un besoin
+précis :
 
-| Workspace       | Rôle                                                                         |
-| --------------- | ---------------------------------------------------------------------------- |
-| `packages/core` | domaine, ports, cas d'usage `TriggerWakeUp`, `NotificationDispatcher`        |
-| `apps/server`   | adaptateurs iTunes / MusicBrainz / local, mocks de notification, API Fastify |
-| `apps/web`      | client PWA de démonstration (formulaire, rapport, mode dégradé, hors ligne)  |
+| Besoin (exigence)                                                       | Choix         | Pourquoi celle-ci                                                                                    |
+| ----------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
+| aucun `new` d'implémentation concrète hors composition root             | **awilix**    | IoC sans décorateurs, compatible avec l'exécution native de TypeScript (InversifyJS, tsyringe : non) |
+| exposer le cas d'usage en HTTP                                          | **fastify**   | performant, très maintenu, journalisation pino intégrée                                              |
+| ne jamais laisser une donnée externe non vérifiée entrer dans le métier | **zod**       | zéro dépendance, typage inféré ; `zod/mini` côté web divise le bundle par 4                          |
+| ne pas attendre un fournisseur en panne à l'heure du réveil             | **cockatiel** | timeout + circuit breaker en une bibliothèque sans dépendance (opossum : valable, mais plus lourd)   |
+| iTunes limité à ~20 req/min                                             | **lru-cache** | cache avec TTL de référence ; évite de rappeler l'API pour un même morceau                           |
+| journaliser chaque bascule en mode dégradé                              | **pino**      | logs structurés JSON ; déjà présent via Fastify, donc aucune bibliothèque de plus                    |
 
-Suivi du projet : [`docs/PLAN.md`](docs/PLAN.md). Les tests sont écrits **avant** le code, à partir
-des critères d'acceptation tirés de l'énoncé : [`docs/ACCEPTANCE_CRITERIA.md`](docs/ACCEPTANCE_CRITERIA.md).
+### 2. Vérifier avant d'installer
 
-## Tests et couverture
+Chaque ajout suit la checklist de [`DEPENDENCY_POLICY.md` § 2](docs/DEPENDENCY_POLICY.md#2-checklist-de-vérification-à-recopier-dans-la-pr),
+recopiée dans la PR : besoin et au moins deux alternatives comparées, licence, fraîcheur, maintenance,
+poids des transitives, compatibilité, audit, scripts d'installation.
 
-```bash
-npm test                # 477 tests (Vitest), sans aucun accès réseau
-npm run test:coverage   # + rapport texte, HTML (coverage/index.html) et lcov
-```
+- **Licence** : autorisées partout (MIT, ISC, Apache-2.0, BSD, BlueOak…), tolérées pour l'outillage
+  seulement (MPL-2.0, CC-BY…), interdites (GPL, AGPL, LGPL, SSPL, sans licence…). Le copyleft
+  imposerait de publier notre code. Liste exécutable : [`license-policy.json`](license-policy.json).
+- **Fraîcheur** : 🟢 dernière stable publiée il y a moins de 12 mois · 🟠 12 à 24 mois, justification
+  obligatoire · 🔴 plus de 24 mois ou dépôt archivé, refusé sauf dérogation par ADR.
+- **Choix structurant** : consigné dans un [ADR](docs/adr/README.md) (contexte, alternatives,
+  conséquences).
 
-Chacun des 49 critères `CA-DOM/APP/MUS/NOT/PRF/CMP/WEB-…` est vérifié par au moins un test portant son
-ID (`grep -rhoE "\[CA-[A-Z]+-[0-9]+\]" packages/*/test apps/*/test | sort -u`) ; les critères
-transverses `CA-ARC/DEP-…` le sont par l'outillage (`lint`, `arch:check`, `deps:*`).
+### 3. Installer de façon reproductible
 
-Couverture au 2026-10-08 (seuils bloquants : 90 % lignes, fonctions et instructions, 85 % branches) :
-**99,6 % lignes, 99,6 % instructions, 99,4 % fonctions, 96,7 % branches**.
+- Versions **exactes** (`save-exact=true` dans `.npmrc`) et `package-lock.json` commité : deux
+  installations donnent le même arbre, et toute montée de version est un acte volontaire et relu.
+- `engine-strict=true` : l'installation refuse une version de Node non supportée.
+- Chaque dépendance dans **le bon workspace** (`npm i -w @reveil/server pkg@x.y.z`), en
+  `devDependencies` quand elle ne sert qu'au build ou aux tests.
+- Scripts d'installation bloqués par défaut (npm 12) : aucun n'est autorisé sans revue.
 
-Fichiers exclus de la mesure, faute de logique propre à tester unitairement :
+### 4. Contrôler en continu
 
-- `apps/server/src/main.ts` et `apps/server/src/cli/wake.ts` : points d'entrée qui lisent l'environnement,
-  appellent la composition root et démarrent le serveur ou impriment le rapport ; tout ce qu'ils
-  assemblent (`loadConfig`, `createAppContainer`, `buildHttpServer`, `parseWakeArgs`) est testé.
-- `apps/web/src/main.ts` : rendu DOM fin ; les décisions (champs, requête, validation de la réponse,
-  libellés du rapport) vivent dans des fonctions pures testées. L'annonce `aria-live` et la navigation
-  au clavier sont vérifiées en revue et par Lighthouse (CA-WEB-08).
-- `apps/web/vite.config.ts` : configuration de build ; le manifest et les options Workbox qu'elle
-  consomme sont extraits dans `apps/web/src/pwaManifest.ts` et testés (CA-WEB-07).
-- `index.ts` : réexportations de l'API publique.
+Les règles ne reposent pas sur la bonne volonté : elles sont exécutées par `npm run verify` et par la CI
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) à chaque PR.
 
-Branches restantes non couvertes (6 sur 184), toutes défensives et non atteignables par les tests sans
-artifice :
+| Contrôle                     | Commande                | Outil                                                                                    | Échoue si…                                                                      |
+| ---------------------------- | ----------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| licences de **tout** l'arbre | `npm run deps:licenses` | [`scripts/check-licenses.mjs`](scripts/check-licenses.mjs) + license-checker-rseidelsohn | une licence interdite, inconnue, ou réservée à l'outillage arrive en production |
+| vulnérabilités               | `npm run deps:audit`    | [`scripts/check-audit.mjs`](scripts/check-audit.mjs) sur `npm audit`                     | une faille high/critical sans exception valide, ou une exception expirée        |
+| fraîcheur                    | `npm run deps:outdated` | `npm outdated`                                                                           | (informatif) revu à chaque phase, reporté dans les tableaux ci-dessous          |
+| isolation du métier          | `npm run arch:check`    | dependency-cruiser ([`.dependency-cruiser.cjs`](.dependency-cruiser.cjs))                | `packages/core` importe un paquet npm ou un module `node:*`                     |
+| bibliothèques confinées      | `npm run lint`          | ESLint (`no-restricted-syntax`)                                                          | un `new XxxProvider()` apparaît hors de la composition root                     |
 
-| Fichier                                         | Branche                                                       | Pourquoi elle n'est pas testée                                                         |
-| ----------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `composition/container.ts`                      | `fetch` natif par défaut quand aucun `httpFetch` n'est fourni | l'exercer ferait un appel réseau réel ; les tests injectent toujours un faux `fetch`   |
-| `cli/parseWakeArgs.ts`                          | erreur de `parseArgs` qui ne serait pas une `Error`           | `node:util` ne lève que des `Error` ; garde de typage (`unknown`)                      |
-| `http/wakeUpRequestSchema.ts`                   | exception non `DomainError` relancée par un parseur           | les parseurs du domaine ne lèvent que des `DomainError` ; garde contre une régression  |
-| `http/buildHttpServer.ts`                       | erreur portant un `statusCode` hors 4xx (5xx)                 | même traitement que l'erreur sans statut (500 générique), testée                       |
-| `infrastructure/music/LocalMusicProvider.ts` ×2 | morceau par défaut si la playlist locale était vide           | la playlist est une constante non vide : filet du « fallback qui ne peut pas échouer » |
+Le contrôle des licences distingue production et outillage grâce à `npm query .prod` : une licence
+MPL-2.0 est acceptée dans Vite, pas dans ce qui est livré.
 
-## Dépendances
+### 5. Cas concrets rencontrés
 
-Toute dépendance est vérifiée **avant** intégration selon
-[`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md) : licence (`npm run deps:licenses`, contrôle
-de l'arbre complet, transitives incluses), fraîcheur (`npm run deps:outdated`), vulnérabilités
-(`npm run deps:audit`). Les versions sont figées (`save-exact`) et le lockfile est commité.
+Les règles ont été confrontées à de vraies situations, chacune tracée :
 
-Fraîcheur : 🟢 dernière stable publiée il y a moins de 12 mois · 🟠 12 à 24 mois · 🔴 plus de 24 mois.
+- **Exception d'audit datée** — `npm install` signale 4 vulnérabilités _high_ : `braces` (DoS sur des
+  motifs glob), embarqué par awilix via `fast-glob`. Aucune version corrigée n'existe. Analyse : ce code
+  n'est atteint que par `awilix.loadModules()`, que l'architecture n'appelle jamais (enregistrement
+  explicite, règle inscrite dans `CLAUDE.md`). L'exception est acceptée dans
+  [`audit-exceptions.json`](audit-exceptions.json) avec une **date d'expiration** (2027-01-08) : passé
+  cette date, la CI échoue et la décision doit être réévaluée.
+  [ADR-0003](docs/adr/0003-conteneur-di-awilix.md). Ne pas lancer `npm audit fix --force`.
+- **Dernière version non retenue** — TypeScript 7 est sorti, mais typescript-eslint exige `<6.1.0` :
+  le projet reste volontairement en 6.0.3, et documente pourquoi.
+  [ADR-0005](docs/adr/0005-outillage-et-execution-typescript.md).
+- **Dépendance retirée après coup** — p-throttle (MIT, fraîche) a été installée pour le quota iTunes,
+  puis désinstallée : elle met les appels en file d'attente au lieu d'échouer tout de suite, ce qui
+  retarderait le réveil au lieu de basculer sur le fournisseur suivant. Une fenêtre glissante de
+  quelques lignes la remplace. [ADR-0006](docs/adr/0006-quota-sans-p-throttle.md).
+- **Licence peu courante** — lru-cache est sous BlueOak-1.0.0 : vérifiée (permissive, approuvée OSI,
+  clause de brevets), puis ajoutée explicitement à la politique plutôt que tolérée en silence.
+- **Fork maintenu plutôt qu'original abandonné** — license-checker (🔴 2019) remplacé par
+  license-checker-rseidelsohn.
+- **Risque de chaîne d'approvisionnement** — audit-ci (🟠) dépend d'`event-stream`, compromis en 2018 :
+  écarté au profit d'un script interne de 40 lignes.
+- **Poids du bundle** — côté web, `zod/mini` au lieu de `zod` : 7 kB gzip au lieu de 25 kB, pour la même
+  validation du rapport.
+
+### 6. Inventaire
+
 Relevé du **2026-10-08** (`npm run deps:outdated` vide, `npm view <pkg> version time` pour chaque ligne).
+Fraîcheur : 🟢 moins de 12 mois · 🟠 12 à 24 mois · 🔴 plus de 24 mois.
 
-### Production (`apps/server`, `apps/web`)
+#### Production (`apps/server`, `apps/web`)
 
 | Package   | Rôle                                                         | Licence       | Version installée | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                                                                                           |
 | --------- | ------------------------------------------------------------ | ------------- | ----------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -136,7 +207,7 @@ Relevé du **2026-10-08** (`npm run deps:outdated` vide, `npm view <pkg> version
 
 `packages/core` : **aucune dépendance**, par construction (vérifié par dependency-cruiser).
 
-### Développement et outillage
+#### Développement et outillage
 
 | Package                     | Workspace | Rôle                             | Licence      | Version installée  | Dernière stable (date) | Fraîcheur | Remarque                                                                                                                      |
 | --------------------------- | --------- | -------------------------------- | ------------ | ------------------ | ---------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -162,7 +233,7 @@ uniquement. Seuls des outils de développement embarquent des licences autorisé
 puisque non modifié et non distribué), `CC-BY-3.0`/`CC-BY-4.0` (données SPDX et `caniuse-lite`).
 `fsevents` (optionnel, macOS) a un script d'installation bloqué par npm 12 : aucun effet fonctionnel.
 
-### Composants évalués et écartés
+### 7. Composants évalués et écartés
 
 | Composant                  | Raison                                                                                                                                                                                             |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -179,7 +250,7 @@ puisque non modifié et non distribué), `CC-BY-3.0`/`CC-BY-4.0` (données SPDX 
 | opossum                    | valable (Apache-2.0, frais) mais cockatiel couvre timeout + breaker sans dépendance                                                                                                                |
 | React / Vue                | surdimensionné pour un formulaire de démonstration                                                                                                                                                 |
 
-### API externes
+### 8. API externes
 
 | Service           | Conditions                                               | Usage                                                                                                                     |
 | ----------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
