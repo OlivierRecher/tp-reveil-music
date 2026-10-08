@@ -26,7 +26,8 @@ async function main(argv: ReadonlyArray<string>): Promise<number> {
     throw error;
   }
 
-  // Journal applicatif sur la sortie d'erreur : la sortie standard reste dédiée au rapport.
+  // Journal applicatif sur la sortie d'erreur : la sortie standard ne porte que la trace de l'envoi
+  // simulé (FileNotificationLog, CA-NOT-02) et le rapport.
   const container = buildContainer(config, {
     pinoLogger: pino({ level: config.logLevel }, pino.destination(2)),
   });

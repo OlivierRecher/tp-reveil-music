@@ -134,7 +134,9 @@ Implémentation :
 - [x] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
 - [x] Script CLI de démonstration : `npm run wake -- --user u1 --day LUNDI --weather PLUIE`
 - [x] Démo manuelle avec les vraies API iTunes et MusicBrainz, puis avec le réseau coupé (mode dégradé)
-      — panne simulée par `SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push` (2026-10-08)
+      — 2026-10-08 : vraies API (u1/LUNDI/PLUIE → « Riders on the Storm » via iTunes, puis via
+      MusicBrainz avec `MUSIC_PROVIDERS=musicbrainz`) ; mode dégradé par
+      `SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push` (morceau local, remise `LOG`)
 
 ## Phase 5 — Client PWA (`apps/web`)
 

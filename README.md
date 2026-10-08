@@ -17,8 +17,9 @@ npm run dev:web         # PWA : http://localhost:5173
 npm run verify          # format, lint, types, architecture, tests + couverture, licences, audit
 ```
 
-Déclencher un réveil sans serveur (script de démonstration ; le rapport JSON sort sur la sortie
-standard, le journal pino sur la sortie d'erreur ; code de sortie 1 si un argument est invalide) :
+Déclencher un réveil sans serveur (script de démonstration ; la trace de l'envoi simulé puis le
+rapport JSON sortent sur la sortie standard, le journal pino sur la sortie d'erreur ; code de sortie 1
+si un argument est invalide) :
 
 ```bash
 npm run wake -- --user u1 --day LUNDI --weather PLUIE
