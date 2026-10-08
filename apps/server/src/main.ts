@@ -1,5 +1,5 @@
-// Point d'entrée : construit le conteneur (composition root) puis démarre l'API HTTP.
-import { buildContainer } from './composition/container.ts';
+// Point d'entrée : assemble l'application (composition root) puis démarre l'API HTTP.
+import { composeApplication } from './composition/compositionRoot.ts';
 import { ConfigError } from './config/ConfigError.ts';
 import { loadConfig } from './config/env.ts';
 import type { AppConfig } from './config/env.ts';
@@ -22,9 +22,9 @@ function readConfig(): AppConfig {
 }
 
 const config = readConfig();
-const container = buildContainer(config);
-const logger = container.resolve('logger');
-const app = buildHttpServer({ triggerWakeUp: container.resolve('triggerWakeUp'), logger });
+const application = composeApplication(config);
+const { logger } = application;
+const app = buildHttpServer({ triggerWakeUp: application.triggerWakeUp, logger });
 
 await app.listen({ port: config.port, host: HOST });
 logger.info('API du réveil musical démarrée', {
@@ -33,11 +33,11 @@ logger.info('API du réveil musical démarrée', {
   simulatedFailures: [...config.simulatedFailures],
 });
 
-/** Arrêt propre : plus de nouvelles requêtes, puis libération des ressources du conteneur. */
+/** Arrêt propre : plus de nouvelles requêtes, puis libération des ressources de l'application. */
 async function shutdown(signal: string): Promise<void> {
   logger.info('Arrêt du serveur', { signal });
   await app.close();
-  await container.dispose();
+  await application.dispose();
 }
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
