@@ -97,6 +97,22 @@ par l'utilisateur pour une météo non couverte est un fonctionnement **normal**
 | CA-CMP-04 | `POST /api/wake-ups` avec une météo, un jour ou un ID invalide renvoie 400 sans déclencher d'envoi                                          | É                             | [x]    |
 | CA-CMP-05 | Avec tous les fournisseurs musicaux et canaux simulés en panne, l'API renvoie quand même 200, un morceau local et une trace dans le journal | É « un silence ne l'est pas » | [x]    |
 
+## Phase 5 — Client PWA
+
+| ID        | Critère                                                                                                                                                           | Source                        | Validé |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------ |
+| CA-WEB-01 | Le formulaire propose l'identifiant utilisateur, le jour (les 7 valeurs `LUNDI` … `DIMANCHE`) et la météo (les 4 valeurs de l'énoncé), chaque champ étant libellé | É « Point d'entrée »          | [x]    |
+| CA-WEB-02 | La soumission envoie `POST /api/wake-ups` (même origine) avec le corps JSON `{ userId, dayOfWeek, weather }` ; le client n'appelle jamais iTunes ni MusicBrainz   | ADR-0001                      | [x]    |
+| CA-WEB-03 | Un rapport reçu (200) est affiché : titre, artiste, lien s'il existe, canal utilisé et liste des tentatives (canal, succès ou échec)                              | É, ADR-0004                   | [x]    |
+| CA-WEB-04 | Un badge « mode dégradé » est affiché si et seulement si le rapport indique `degraded: true`                                                                      | ADR-0004                      | [x]    |
+| CA-WEB-05 | Une réponse 400 affiche une erreur de saisie ; une erreur réseau ou 5xx affiche « service indisponible » ; aucun plantage, le formulaire reste utilisable         | É « un silence ne l'est pas » | [x]    |
+| CA-WEB-06 | Une réponse 200 au format inattendu est traitée comme une erreur (réponse validée), jamais affichée partiellement                                                 | É « ne doit pas fuiter »      | [x]    |
+| CA-WEB-07 | L'application est installable : manifest (nom, icônes 192 et 512 px, `display: standalone`) et service worker mettant en cache la coquille                        | ADR-0001                      | [x]    |
+| CA-WEB-08 | Accessibilité de base : champs libellés, zone de résultat annoncée (`aria-live`), utilisable entièrement au clavier, contrastes AA                                | ADR-0001                      | [x]    |
+
+Critères rédigés et validés le 2026-10-08 (exécution autonome des phases demandée par l'équipe).
+CA-WEB-07 et CA-WEB-08 sont vérifiés par le build et une revue manuelle (Lighthouse) ; les autres par des tests.
+
 ## Transverses (vérifiés par l'outillage)
 
 | ID        | Critère                                                                                                    | Source                          | Vérifié par            |
