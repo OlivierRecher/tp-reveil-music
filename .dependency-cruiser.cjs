@@ -59,6 +59,14 @@ module.exports = {
       to: { path: '^apps/server/src/infrastructure/music/' },
     },
     {
+      name: 'channel-adapters-depend-on-vendor-interfaces',
+      comment:
+        'CA-NOT-06 : un adaptateur de canal dépend de l’interface du fournisseur (EmailClient…), jamais du mock de `vendors/`.',
+      severity: 'error',
+      from: { path: '^apps/server/src/infrastructure/notification/(?!vendors/)' },
+      to: { path: '^apps/server/src/infrastructure/notification/vendors/' },
+    },
+    {
       name: 'web-client-does-not-import-server',
       severity: 'error',
       from: { path: '^apps/web/' },
