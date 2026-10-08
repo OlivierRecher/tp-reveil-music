@@ -21,7 +21,9 @@ export default defineConfig({
         theme_color: '#1f2937',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          // Déclaration séparée (« any maskable » est déconseillé) : le motif tient dans la zone sûre.
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

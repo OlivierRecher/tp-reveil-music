@@ -151,7 +151,7 @@ Implémentation :
       — build vérifié (manifest, `sw.js`, icônes 192/512 générées par `scripts/generate-icons.mjs`),
       Lighthouse à faire en démo
 - [ ] Accessibilité de base (labels, contrastes, navigation clavier) — implémentée (`label for`,
-      `aria-live`, `role="alert"`, focus visible, contrastes AA calculés), revue Lighthouse à faire en démo
+      `aria-live`, focus visible, contrastes AA calculés), revue Lighthouse à faire en démo
 - [x] Ajouter `apps/web` à la couverture si de la logique non triviale y apparaît
 
 ## Phase 6 — Finalisation et livrables

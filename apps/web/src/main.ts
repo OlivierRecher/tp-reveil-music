@@ -102,10 +102,10 @@ function renderOutcome(result: HTMLElement, outcome: WakeUpOutcome): void {
     result.replaceChildren(renderReport(toReportViewModel(outcome.report)));
     return;
   }
-  const alert = element('p', outcome.message);
-  alert.className = 'error';
-  alert.setAttribute('role', 'alert');
-  result.replaceChildren(alert);
+  // Pas de `role="alert"` : imbriqué dans la région `aria-live`, il ferait annoncer l'erreur deux fois.
+  const error = element('p', outcome.message);
+  error.className = 'error';
+  result.replaceChildren(error);
 }
 
 function renderReport(view: ReportViewModel): HTMLElement {

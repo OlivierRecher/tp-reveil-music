@@ -4,6 +4,7 @@ import type { DeliveryAttemptView, WakeUpReportView } from './wakeUpApi.ts';
 export interface ReportViewModel {
   readonly title: string;
   readonly artist: string;
+  /** Lien d'écoute, uniquement s'il est en http(s). */
   readonly link?: string;
   /** Libellé du canal qui a effectivement délivré la notification. */
   readonly deliveredVia: string;
@@ -15,7 +16,8 @@ export interface ReportViewModel {
 
 /** Traduit un rapport validé en modèle de vue (fonction pure). */
 export function toReportViewModel(report: WakeUpReportView): ReportViewModel {
-  const { title, artist, link } = report.track;
+  const { title, artist } = report.track;
+  const link = safeLink(report.track.link);
   return {
     title,
     artist,
@@ -25,6 +27,16 @@ export function toReportViewModel(report: WakeUpReportView): ReportViewModel {
     // Le badge suit uniquement le verdict du serveur, jamais une déduction locale (ADR-0004).
     degradedBadge: report.degraded,
   };
+}
+
+/**
+ * Ne garde qu'un lien http(s) : l'URL finit dans un `href`, un schéma `javascript:` ou `data:` venu
+ * d'une réponse altérée ne doit jamais devenir cliquable (défense en profondeur côté client).
+ */
+function safeLink(link: string | undefined): string | undefined {
+  if (link === undefined || !URL.canParse(link)) return undefined;
+  const { protocol } = new URL(link);
+  return protocol === 'https:' || protocol === 'http:' ? link : undefined;
 }
 
 function describeAttempt(attempt: DeliveryAttemptView): string {

@@ -64,6 +64,14 @@ module.exports = {
       from: { path: '^apps/web/' },
       to: { path: '^apps/server/' },
     },
+    {
+      name: 'web-client-does-not-import-core',
+      comment:
+        'La PWA ne parle qu’à l’API HTTP (ADR-0001) : elle ne partage aucun code avec le noyau.',
+      severity: 'error',
+      from: { path: '^apps/web/' },
+      to: { path: '^packages/' },
+    },
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
