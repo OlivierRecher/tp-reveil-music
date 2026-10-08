@@ -84,6 +84,17 @@ describe('LocalMusicProvider', () => {
       expect(track.source).toBe(LOCAL_TRACK_SOURCE);
     });
 
+    it("reconnaît le titre quelle que soit la forme de l’apostrophe (’ ou ')", async () => {
+      const provider = new LocalMusicProvider();
+
+      const track = await provider.resolve(
+        TrackQuery.create({ title: 'Singin’ in the Rain', artist: 'Gene Kelly' }),
+      );
+
+      expect(track.title).toBe("Singin' in the Rain");
+      expect(track.source).toBe(LOCAL_TRACK_SOURCE);
+    });
+
     it('[CA-MUS-08] ne rejette jamais : un titre inconnu donne un morceau local déterministe', async () => {
       const provider = new LocalMusicProvider();
       const unknown = TrackQuery.create({ title: 'Morceau introuvable', artist: 'Personne' });

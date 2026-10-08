@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Track, TrackQuery } from '@reveil/core';
 import { ItunesMusicProvider } from '../../../src/infrastructure/music/ItunesMusicProvider.ts';
 import { FakeHttpFetch } from './doubles/FakeHttpFetch.ts';
-import { expectUnavailable, loadFixture } from './doubles/helpers.ts';
+import { loadFixture } from '../../doubles/loadFixture.ts';
+import { expectUnavailable } from './doubles/helpers.ts';
 
 // Adaptateur iTunes testé contre une réponse réelle stockée en fixture : aucun accès réseau.
 

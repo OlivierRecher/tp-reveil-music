@@ -9,7 +9,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['packages/core/src/**/*.ts', 'apps/server/src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/index.ts', 'apps/server/src/main.ts'],
+      exclude: [
+        '**/*.test.ts',
+        '**/index.ts',
+        'apps/server/src/main.ts',
+        'apps/server/src/cli/wake.ts',
+      ],
       reporter: ['text', 'html', 'lcov'],
       thresholds: { lines: 90, functions: 90, statements: 90, branches: 85 },
     },

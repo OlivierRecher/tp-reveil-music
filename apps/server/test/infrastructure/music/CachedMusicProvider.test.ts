@@ -3,7 +3,8 @@ import { TrackQuery } from '@reveil/core';
 import { CachedMusicProvider } from '../../../src/infrastructure/music/CachedMusicProvider.ts';
 import { ItunesMusicProvider } from '../../../src/infrastructure/music/ItunesMusicProvider.ts';
 import { FakeHttpFetch } from './doubles/FakeHttpFetch.ts';
-import { expectUnavailable, loadFixture } from './doubles/helpers.ts';
+import { loadFixture } from '../../doubles/loadFixture.ts';
+import { expectUnavailable } from './doubles/helpers.ts';
 import { ScriptedMusicProvider } from './doubles/ScriptedMusicProvider.ts';
 
 // Cache avec durée de vie : horloge simulée, appels HTTP comptés sur un faux fetch.

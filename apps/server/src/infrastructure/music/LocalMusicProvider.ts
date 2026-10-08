@@ -18,7 +18,10 @@ const DEFAULT_ENTRY: LocalTrackEntry = {
 export class LocalMusicProvider implements MusicProvider, EmergencyPlaylist {
   readonly name = LOCAL_TRACK_SOURCE;
 
-  /** Morceau local de même titre (casse et espaces ignorés), sinon le premier de la playlist. */
+  /**
+   * Morceau local de même titre (casse, espaces et forme de l'apostrophe ignorés), sinon le premier
+   * de la playlist : sans la météo, la requête ne permet pas de choisir mieux.
+   */
   resolve(query: TrackQuery): Promise<Track> {
     const wanted = normalize(query.title);
     const entry = LOCAL_TRACKS.find((candidate) => normalize(candidate.title) === wanted);
@@ -32,8 +35,11 @@ export class LocalMusicProvider implements MusicProvider, EmergencyPlaylist {
   }
 }
 
+/** Apostrophes typographiques (’ ‘ ʼ) et accent grave ramenés à l'apostrophe droite. */
+const APOSTROPHES = /[\u2018\u2019\u02BC`]/g;
+
 function normalize(text: string): string {
-  return text.trim().replace(/\s+/g, ' ').toLowerCase();
+  return text.trim().replace(/\s+/g, ' ').replace(APOSTROPHES, "'").toLowerCase();
 }
 
 function toTrack(entry: LocalTrackEntry): Track {

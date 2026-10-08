@@ -1,12 +1,5 @@
-import { readFileSync } from 'node:fs';
 import { expect, vi } from 'vitest';
 import { MusicProviderUnavailableError } from '../../../../src/infrastructure/music/MusicProviderUnavailableError.ts';
-
-/** Charge une fixture JSON (copie neuve à chaque appel, modifiable par le test). */
-export function loadFixture(fileName: string): unknown {
-  const url = new URL(`../../../fixtures/${fileName}`, import.meta.url);
-  return JSON.parse(readFileSync(url, 'utf8')) as unknown;
-}
 
 export type Settlement<T> =
   | { readonly status: 'pending' }

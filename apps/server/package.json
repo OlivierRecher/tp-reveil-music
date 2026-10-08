@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node --watch --env-file-if-exists=../../.env src/main.ts",
     "start": "node --env-file-if-exists=../../.env src/main.ts",
+    "wake": "node --env-file-if-exists=../../.env src/cli/wake.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

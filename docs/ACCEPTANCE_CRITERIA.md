@@ -91,11 +91,11 @@ par l'utilisateur pour une météo non couverte est un fonctionnement **normal**
 
 | ID        | Critère                                                                                                                                     | Source                        | Validé |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------ |
-| CA-CMP-01 | Toutes les dépendances du cas d'usage sont résolues par le conteneur ; aucun `new` d'implémentation hors de la composition root (lint)      | É « IoC / DI »                | [ ]    |
-| CA-CMP-02 | Changer `MUSIC_PROVIDERS` (ex. `musicbrainz,itunes` ou `musicbrainz`) change l'ordre ou la composition de la chaîne sans modifier le code   | É « changer rapidement »      | [ ]    |
-| CA-CMP-03 | `POST /api/wake-ups` avec un corps valide renvoie 200 et le rapport de réveil                                                               | É, ADR-0001                   | [ ]    |
-| CA-CMP-04 | `POST /api/wake-ups` avec une météo, un jour ou un ID invalide renvoie 400 sans déclencher d'envoi                                          | É                             | [ ]    |
-| CA-CMP-05 | Avec tous les fournisseurs musicaux et canaux simulés en panne, l'API renvoie quand même 200, un morceau local et une trace dans le journal | É « un silence ne l'est pas » | [ ]    |
+| CA-CMP-01 | Toutes les dépendances du cas d'usage sont résolues par le conteneur ; aucun `new` d'implémentation hors de la composition root (lint)      | É « IoC / DI »                | [x]    |
+| CA-CMP-02 | Changer `MUSIC_PROVIDERS` (ex. `musicbrainz,itunes` ou `musicbrainz`) change l'ordre ou la composition de la chaîne sans modifier le code   | É « changer rapidement »      | [x]    |
+| CA-CMP-03 | `POST /api/wake-ups` avec un corps valide renvoie 200 et le rapport de réveil                                                               | É, ADR-0001                   | [x]    |
+| CA-CMP-04 | `POST /api/wake-ups` avec une météo, un jour ou un ID invalide renvoie 400 sans déclencher d'envoi                                          | É                             | [x]    |
+| CA-CMP-05 | Avec tous les fournisseurs musicaux et canaux simulés en panne, l'API renvoie quand même 200, un morceau local et une trace dans le journal | É « un silence ne l'est pas » | [x]    |
 
 ## Transverses (vérifiés par l'outillage)
 

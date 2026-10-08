@@ -120,20 +120,23 @@ Implémentation :
 
 ## Phase 4 — Composition root et points d'entrée
 
-- [ ] 🧪 Critères CA-CMP-01 à 05 relus et validés par l'équipe (colonne « Validé »)
-- [ ] 🧪 Tests d'acceptation écrits : résolution par le conteneur, changement de fournisseur par
+- [x] 🧪 Critères CA-CMP-01 à 05 relus et validés par l'équipe (colonne « Validé »)
+- [x] 🧪 Tests d'acceptation écrits : résolution par le conteneur, changement de fournisseur par
       configuration, tests HTTP via `fastify.inject()` (sans réseau), scénario « tout en panne », échouant pour la bonne raison, relus, commit
       `test(…): … (rouge)`
 
 Implémentation :
 
-- [ ] `composition/container.ts` : enregistrement awilix explicite (pas de `loadModules`), chaîne
+- [x] `composition/container.ts` : enregistrement awilix explicite (pas de `loadModules`), chaîne
       musicale construite selon `MUSIC_PROVIDERS`, registre des canaux
-- [ ] `http/` : serveur Fastify, `POST /api/wake-ups` (validation zod → 400 si invalide), `GET /health`,
+- [x] `http/` : serveur Fastify, `POST /api/wake-ups` (validation zod → 400 si invalide), `GET /health`,
       gestion d'erreurs centralisée
-- [ ] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
-- [ ] Script CLI de démonstration : `npm run wake -- --user u1 --day LUNDI --weather PLUIE`
-- [ ] Démo manuelle avec les vraies API iTunes et MusicBrainz, puis avec le réseau coupé (mode dégradé)
+- [x] `main.ts` : démarrage, arrêt propre (SIGINT/SIGTERM → `container.dispose()`)
+- [x] Script CLI de démonstration : `npm run wake -- --user u1 --day LUNDI --weather PLUIE`
+- [x] Démo manuelle avec les vraies API iTunes et MusicBrainz, puis avec le réseau coupé (mode dégradé)
+      — 2026-10-08 : vraies API (u1/LUNDI/PLUIE → « Riders on the Storm » via iTunes, puis via
+      MusicBrainz avec `MUSIC_PROVIDERS=musicbrainz`) ; mode dégradé par
+      `SIMULATED_FAILURES=itunes,musicbrainz,email,sms,push` (morceau local, remise `LOG`)
 
 ## Phase 5 — Client PWA (`apps/web`)
 

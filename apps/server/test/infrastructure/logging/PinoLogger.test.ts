@@ -1,22 +1,8 @@
-import { Writable } from 'node:stream';
 import { pino } from 'pino';
 import { describe, expect, it } from 'vitest';
 import type { Logger } from '@reveil/core';
 import { PinoLogger } from '../../../src/infrastructure/logging/PinoLogger.ts';
-
-/** Flux mémoire : capture chaque ligne JSON écrite par pino (aucun fichier, aucune console). */
-class MemoryStream extends Writable {
-  readonly lines: Array<Record<string, unknown>> = [];
-
-  override _write(chunk: Buffer, _encoding: BufferEncoding, callback: () => void): void {
-    for (const line of chunk.toString('utf8').split('\n')) {
-      if (line.trim() !== '') {
-        this.lines.push(JSON.parse(line) as Record<string, unknown>);
-      }
-    }
-    callback();
-  }
-}
+import { MemoryStream } from '../../doubles/MemoryStream.ts';
 
 function setup(): { logger: Logger; stream: MemoryStream } {
   const stream = new MemoryStream();
