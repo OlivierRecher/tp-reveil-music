@@ -1,0 +1,46 @@
+{
+  "name": "reveil-musical",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Réveil musical assisté : choix du morceau selon le jour et la météo, notification multi-canal avec mode dégradé.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace @reveil/server",
+    "dev:web": "npm run dev --workspace @reveil/web",
+    "start": "npm run start --workspace @reveil/server",
+    "build:web": "npm run build --workspace @reveil/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "arch:check": "depcruise packages apps --config .dependency-cruiser.cjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "deps:licenses": "node scripts/check-licenses.mjs",
+    "deps:outdated": "npm outdated --workspaces --include-workspace-root",
+    "deps:audit": "node scripts/check-audit.mjs",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run arch:check && npm run test:coverage && npm run deps:licenses && npm run deps:audit"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.6.4",
+    "@vitest/coverage-v8": "5.0.3",
+    "dependency-cruiser": "18.5.0",
+    "eslint": "10.12.0",
+    "license-checker-rseidelsohn": "5.0.1",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "5.0.3"
+  }
+}
