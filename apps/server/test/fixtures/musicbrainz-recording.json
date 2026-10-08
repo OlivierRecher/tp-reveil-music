@@ -1,0 +1,739 @@
+{
+  "created": "2026-10-08T10:08:27.535Z",
+  "count": 21,
+  "offset": 0,
+  "recordings": [
+    {
+      "id": "ec256b84-fd49-4dd0-baff-8480b58b5e1e",
+      "score": 100,
+      "artist-credit-id": "94e6c1ea-82e8-31d0-bc1a-f3a864cc7fe2",
+      "title": "Under Pressure",
+      "video": null,
+      "artist-credit": [
+        {
+          "joinphrase": " & ",
+          "name": "Queen",
+          "artist": {
+            "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+            "name": "Queen",
+            "sort-name": "Queen",
+            "disambiguation": "UK rock group",
+            "aliases": [
+              {
+                "sort-name": "Queen",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Queen",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "皇后乐队",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "皇后乐队",
+                "locale": "zh_Hans_CN",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "クイーン",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "クイーン",
+                "locale": "ja",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "David Bowie",
+          "artist": {
+            "id": "5441c29d-3602-4898-b1a1-b77fa23b8e50",
+            "name": "David Bowie",
+            "sort-name": "Bowie, David",
+            "disambiguation": "English singer‐songwriter",
+            "aliases": [
+              {
+                "sort-name": "Jones, Davy",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Davy Jones",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": "1965"
+              },
+              {
+                "sort-name": "데이비드 보위",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "데이비드 보위",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Ziggy Stardust",
+                "name": "Ziggy Stardust",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "David Jones",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "David Jones",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Jones, David Robert",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "David Robert Jones",
+                "locale": null,
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Дэвид Боуи",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "Дэвид Боуи",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "The Thin White Duke",
+                "name": "The Thin White Duke",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "デビッド・ボウイ",
+                "name": "デビッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davis Bowie",
+                "name": "Davis Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Bowie",
+                "name": "Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davie Bowie",
+                "name": "Davie Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Harry the Butcher",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Harry the Butcher",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": "1970-02-23",
+                "end-date": "1970-02-24"
+              },
+              {
+                "sort-name": "デヴィッド・ボウイ",
+                "name": "デヴィッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "first-release-date": "2022-05-20",
+      "releases": [
+        {
+          "id": "aa249935-c0e6-4d5b-9a68-191665279aaa",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "949a7fd5-fe73-3e8f-922e-01ff4ca958f7",
+          "count": 3,
+          "title": "NOW Yearbook: 1981",
+          "status": "Official",
+          "disambiguation": "red vinyl",
+          "artist-credit": [
+            {
+              "name": "Various Artists",
+              "artist": {
+                "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+                "name": "Various Artists",
+                "sort-name": "Various Artists",
+                "disambiguation": "add compilations to this artist"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "77c12e69-6a93-4601-a9d1-7608052e0175",
+            "type-id": "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "NOW Yearbook: 1981",
+            "primary-type": "Album",
+            "secondary-types": ["Compilation"],
+            "secondary-type-ids": ["dd2a21e1-0c00-3729-a7a0-de60b84eb5d1"]
+          },
+          "date": "2022-05-20",
+          "country": "GB",
+          "release-events": [
+            {
+              "date": "2022-05-20",
+              "area": {
+                "id": "8a754a16-0027-3a29-b6d7-2b40ea0481ed",
+                "name": "United Kingdom",
+                "sort-name": "United Kingdom",
+                "iso-3166-1-codes": ["GB"]
+              }
+            }
+          ],
+          "track-count": 46,
+          "media": [
+            {
+              "id": "a694f8f8-0cd9-4e7a-9bb9-1e7e9f110594",
+              "position": 1,
+              "format": "12\" Vinyl",
+              "track": [
+                {
+                  "id": "f618cbfb-0125-4adb-97ab-1a1da946f11c",
+                  "number": "A1",
+                  "title": "Under Pressure"
+                }
+              ],
+              "track-count": 15,
+              "track-offset": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a6d3063b-c34f-46c7-b61c-dda4d94195a9",
+      "score": 100,
+      "artist-credit-id": "94e6c1ea-82e8-31d0-bc1a-f3a864cc7fe2",
+      "title": "Under Pressure",
+      "length": 266920,
+      "video": true,
+      "artist-credit": [
+        {
+          "joinphrase": " & ",
+          "name": "Queen",
+          "artist": {
+            "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+            "name": "Queen",
+            "sort-name": "Queen",
+            "disambiguation": "UK rock group",
+            "aliases": [
+              {
+                "sort-name": "Queen",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Queen",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "皇后乐队",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "皇后乐队",
+                "locale": "zh_Hans_CN",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "クイーン",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "クイーン",
+                "locale": "ja",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "David Bowie",
+          "artist": {
+            "id": "5441c29d-3602-4898-b1a1-b77fa23b8e50",
+            "name": "David Bowie",
+            "sort-name": "Bowie, David",
+            "disambiguation": "English singer‐songwriter",
+            "aliases": [
+              {
+                "sort-name": "Jones, Davy",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Davy Jones",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": "1965"
+              },
+              {
+                "sort-name": "데이비드 보위",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "데이비드 보위",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Ziggy Stardust",
+                "name": "Ziggy Stardust",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "David Jones",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "David Jones",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Jones, David Robert",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "David Robert Jones",
+                "locale": null,
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Дэвид Боуи",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "Дэвид Боуи",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "The Thin White Duke",
+                "name": "The Thin White Duke",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "デビッド・ボウイ",
+                "name": "デビッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davis Bowie",
+                "name": "Davis Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Bowie",
+                "name": "Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davie Bowie",
+                "name": "Davie Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Harry the Butcher",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Harry the Butcher",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": "1970-02-23",
+                "end-date": "1970-02-24"
+              },
+              {
+                "sort-name": "デヴィッド・ボウイ",
+                "name": "デヴィッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "first-release-date": "2014",
+      "releases": [
+        {
+          "id": "047a4aae-27f8-4f2d-92fb-214fd8dc865a",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "edbf1ee2-3861-3d95-b971-8f243cbc7e54",
+          "count": 2,
+          "title": "Hot Space",
+          "status": "Official",
+          "disambiguation": "deluxe edition",
+          "artist-credit": [
+            {
+              "name": "Queen",
+              "artist": {
+                "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+                "name": "Queen",
+                "sort-name": "Queen",
+                "disambiguation": "UK rock group"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "3918b90b-340e-3779-9d7e-ba1593653498",
+            "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+            "title": "Hot Space",
+            "primary-type": "Album"
+          },
+          "date": "2014",
+          "country": "GB",
+          "release-events": [
+            {
+              "date": "2014",
+              "area": {
+                "id": "8a754a16-0027-3a29-b6d7-2b40ea0481ed",
+                "name": "United Kingdom",
+                "sort-name": "United Kingdom",
+                "iso-3166-1-codes": ["GB"]
+              }
+            }
+          ],
+          "track-count": 19,
+          "media": [
+            {
+              "id": "9fd81338-bf30-30ff-96ad-0fb11129c38c",
+              "position": 2,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "6a31811e-e7ac-44d9-8345-7a6918130bf7",
+                  "number": "7",
+                  "title": "Under Pressure",
+                  "length": 266920
+                }
+              ],
+              "track-count": 8,
+              "track-offset": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "22f16cb3-4c55-4a95-9062-a277dae06f04",
+      "score": 100,
+      "artist-credit-id": "94e6c1ea-82e8-31d0-bc1a-f3a864cc7fe2",
+      "title": "Under Pressure",
+      "length": 152000,
+      "disambiguation": "part of “DAVE” DJ‐mix",
+      "video": null,
+      "artist-credit": [
+        {
+          "joinphrase": " & ",
+          "name": "Queen",
+          "artist": {
+            "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+            "name": "Queen",
+            "sort-name": "Queen",
+            "disambiguation": "UK rock group",
+            "aliases": [
+              {
+                "sort-name": "Queen",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Queen",
+                "locale": "en",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "皇后乐队",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "皇后乐队",
+                "locale": "zh_Hans_CN",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "クイーン",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "クイーン",
+                "locale": "ja",
+                "type": "Artist name",
+                "primary": true,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "David Bowie",
+          "artist": {
+            "id": "5441c29d-3602-4898-b1a1-b77fa23b8e50",
+            "name": "David Bowie",
+            "sort-name": "Bowie, David",
+            "disambiguation": "English singer‐songwriter",
+            "aliases": [
+              {
+                "sort-name": "Jones, Davy",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Davy Jones",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": "1965"
+              },
+              {
+                "sort-name": "데이비드 보위",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "데이비드 보위",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Ziggy Stardust",
+                "name": "Ziggy Stardust",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "David Jones",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "David Jones",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Jones, David Robert",
+                "type-id": "d4dcd0c0-b341-3612-a332-c0ce797b25cf",
+                "name": "David Robert Jones",
+                "locale": null,
+                "type": "Legal name",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Дэвид Боуи",
+                "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+                "name": "Дэвид Боуи",
+                "locale": null,
+                "type": "Search hint",
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "The Thin White Duke",
+                "name": "The Thin White Duke",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "デビッド・ボウイ",
+                "name": "デビッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davis Bowie",
+                "name": "Davis Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Bowie",
+                "name": "Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Davie Bowie",
+                "name": "Davie Bowie",
+                "locale": null,
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              },
+              {
+                "sort-name": "Harry the Butcher",
+                "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+                "name": "Harry the Butcher",
+                "locale": null,
+                "type": "Artist name",
+                "primary": null,
+                "begin-date": "1970-02-23",
+                "end-date": "1970-02-24"
+              },
+              {
+                "sort-name": "デヴィッド・ボウイ",
+                "name": "デヴィッド・ボウイ",
+                "locale": "ja",
+                "type": null,
+                "primary": null,
+                "begin-date": null,
+                "end-date": null
+              }
+            ]
+          }
+        }
+      ],
+      "releases": [
+        {
+          "id": "60a25131-8390-4779-ab25-f1c16288a44a",
+          "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+          "artist-credit-id": "961a24f9-638d-3b7b-ae03-44af0a7ecffb",
+          "count": 1,
+          "title": "DAVE",
+          "status": "Official",
+          "artist-credit": [
+            {
+              "name": "2manydjs",
+              "artist": {
+                "id": "82dc508a-dbda-4954-aedc-28895edfa42e",
+                "name": "2manydjs",
+                "sort-name": "2manydjs"
+              }
+            }
+          ],
+          "release-group": {
+            "id": "605ec58f-9eb9-4983-ae0f-931da4093ccd",
+            "type-id": "3b2e49e1-2875-37b8-9fa9-1f7cf3f49900",
+            "primary-type-id": "3b2e49e1-2875-37b8-9fa9-1f7cf3f49900",
+            "title": "Radio Soulwax presents DAVE",
+            "primary-type": "Broadcast",
+            "secondary-types": ["Compilation", "DJ-mix"],
+            "secondary-type-ids": [
+              "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+              "0d47f47a-3fe5-3d69-ac9d-d566c23968bf"
+            ]
+          },
+          "track-count": 36,
+          "media": [
+            {
+              "id": "e5d43d37-da98-403b-b39f-c3f4fcafc876",
+              "position": 1,
+              "format": "Digital Media",
+              "track": [
+                {
+                  "id": "bb9f5f0d-e78d-49a6-ba4e-ab48dda8854c",
+                  "number": "14",
+                  "title": "Under Pressure",
+                  "length": 152000
+                }
+              ],
+              "track-count": 36,
+              "track-offset": 13
+            }
+          ]
+        }
+      ],
+      "isrcs": ["US23A8279955"]
+    }
+  ]
+}

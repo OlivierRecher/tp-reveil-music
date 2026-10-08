@@ -159,3 +159,5 @@ Vue de synthèse. Le détail testable (un ID `CA-…` par comportement attendu) 
 - **Utilisateur inconnu** : traité comme une panne du service de préférences (mode dégradé, canal `LOG`).
 - **Ordonnancement** hors périmètre (énoncé) : l'API HTTP et un script CLI simulent le déclenchement.
 - **Fallback local** : 5 à 10 morceaux codés en dur, au moins un par type de météo.
+- **Recherche MusicBrainz** : requête Lucene par champs (`recording:"…" AND artist:"…"`), la recherche
+  plein texte renvoyant surtout des reprises (constaté sur capture réelle).
