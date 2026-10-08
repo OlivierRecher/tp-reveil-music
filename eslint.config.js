@@ -2,9 +2,10 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 // Règle d'architecture n°2 de l'énoncé : aucune implémentation concrète instanciée avec `new`
-// en dehors de la composition root. On cible les suffixes de nos classes de services/adaptateurs.
+// en dehors de la composition root. On cible les suffixes de nos classes de services/adaptateurs
+// (`Logger`/`Log` : PinoLogger, FileNotificationLog ; `WakeUp` : le cas d'usage TriggerWakeUp).
 const FORBIDDEN_NEW =
-  'NewExpression[callee.name=/(Provider|Catalog|Notifier|Channel|Adapter|Client|Gateway|Service|Repository|UseCase|Dispatcher|Policy)$/]';
+  'NewExpression[callee.name=/(Provider|Catalog|Notifier|Channel|Adapter|Client|Gateway|Service|Repository|UseCase|Dispatcher|Policy|Logger|Log|WakeUp)$/]';
 
 const LOAD_MODULES_MESSAGE =
   'loadModules (fast-glob → braces, GHSA-vfj7-8cjw-p6xm) est exclu : enregistrement explicite dans container.ts (ADR-0003).';

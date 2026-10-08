@@ -52,7 +52,8 @@ apps/server/            @reveil/server : adaptateurs, composition root, API HTTP
   src/composition/      container.ts : SEUL endroit où les implémentations concrètes sont connues
   src/config/           lecture/validation de l'environnement (zod)
   src/http/             adaptateur entrant Fastify (POST /api/wake-ups, GET /health)
-  src/infrastructure/   adaptateurs sortants : music/, notification/, preferences/, logging/
+  src/cli/              adaptateur entrant CLI de démonstration (npm run wake)
+  src/infrastructure/   adaptateurs sortants : music/, notification/, preferences/, logging/, http/ (type HttpFetch)
 apps/web/               @reveil/web : client PWA (vanilla TS + Vite), ne parle qu'à notre API
 ```
 

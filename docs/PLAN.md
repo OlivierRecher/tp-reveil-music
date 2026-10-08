@@ -174,7 +174,10 @@ Implémentation :
 - [x] README : démarrage rapide, architecture résumée, exemples d'appel `curl` — revérifiés contre le
       code (`npm run wake` exécuté, variables, utilisateurs, formats de réponse) ; ajout de `build:web` et
       de la section « Tests et couverture »
-- [ ] Relecture finale contre la grille : isolation, IoC (aucun `new`), patterns, tests, README des dépendances
+- [x] Relecture finale contre la grille : isolation, IoC (aucun `new`), patterns, tests, README des dépendances
+      — 2026-10-08 : règle ESLint anti-`new` étendue (`TriggerWakeUp`, `PinoLogger`, `FileNotificationLog`
+      n'étaient pas couverts), `pino-pretty` branché sur `dev:server`, documentation alignée (ajout d'un
+      canal = adaptateur + valeur de `ChannelType` + enregistrement) ; points restants à arbitrer par l'équipe
 - [ ] Tag `v1.0.0`
 
 ---

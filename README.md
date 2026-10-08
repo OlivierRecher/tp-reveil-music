@@ -12,7 +12,7 @@ TP IMT S5 : gestion des dépendances. Énoncé : [`TP_reveil_musical.pdf`](TP_re
 nvm use                 # Node 26 (>= 24 requis)
 npm install
 cp .env.example .env    # renseigner MUSICBRAINZ_USER_AGENT avec un contact réel
-npm run dev:server      # API : http://localhost:3000
+npm run dev:server      # API : http://localhost:3000 (journal mis en forme par pino-pretty)
 npm run dev:web         # PWA : http://localhost:5173
 npm run build:web       # PWA de production (manifest + service worker) dans apps/web/dist
 npm run verify          # format, lint, types, architecture, tests + couverture, licences, audit
