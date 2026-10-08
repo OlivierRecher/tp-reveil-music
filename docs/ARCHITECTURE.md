@@ -57,16 +57,17 @@ chaque bascule est journalisée en `warn` (avec `userId` et `reason`) et rend le
    prend `EmergencyPlaylist.pick(weather)` (double filet de sécurité, la chaîne étant de
    l'infrastructure), `degraded = true`.
 4. **Message** (domaine) : `WakeUpMessage.compose(track, dayOfWeek, weather)` (« Bon lundi ! Il pleut… »).
-5. **Envoi** : `NotificationDispatcher.dispatch(preferences, message)` → `DispatchResult
-{ deliveredVia, attempts }`. Ordre : canal préféré (s'il est enregistré et que l'utilisateur en a la
-   coordonnée), puis les autres canaux enregistrés pour lesquels il a une coordonnée (ordre
+5. **Envoi** : `NotificationDispatcher.dispatch(preferences, message)` renvoie un `DispatchResult`
+   (`deliveredVia`, `attempts`). Ordre : canal préféré (s'il est enregistré et que l'utilisateur en a
+   la coordonnée), puis les autres canaux enregistrés pour lesquels il a une coordonnée (ordre
    d'enregistrement, sans re-tenter le préféré), puis `lastResortChannel` (`LogChannel`, adressé à
-   `userId.value`). Chaque tentative est journalisée (`debug` avant, `info` si livrée, `warn` si échec).
+   `userId.value`). Chaque tentative est journalisée (`debug` avant, `info` si livrée, `warn` si échec) ;
+   la remise au dernier recours est un `warn`, sauf si `LOG` est le canal préféré de l'utilisateur.
    Si le dernier recours lève malgré son contrat : `error` journalisé, tentative en échec,
    `deliveredVia` = type du dernier recours, aucune exception. Livraison hors du canal préféré ou
    tentative en échec → `degraded = true`.
-6. **Résultat** : `WakeUpReport { userId, dayOfWeek, weather, track, trackSource, deliveredVia,
-attempts[], degraded }` journalisé (`info`) et renvoyé à l'appelant.
+6. **Résultat** : `WakeUpReport` (`userId`, `dayOfWeek`, `weather`, `track`, `trackSource`,
+   `deliveredVia`, `attempts`, `degraded`) journalisé (`info`) et renvoyé à l'appelant.
 
 ## 3. Ports (contrats du noyau)
 
@@ -104,6 +105,10 @@ class TriggerWakeUp {
   execute(command: WakeUpCommand): Promise<WakeUpReport>; // { userId: UserId, dayOfWeek, weather }
 }
 ```
+
+`TriggerWakeUp` dépend directement de `NotificationDispatcher` : c'est un service du noyau, sans
+détail technique, dont l'extensibilité passe par les canaux injectés (`NotificationChannel`). Le placer
+derrière un port n'apporterait qu'une indirection.
 
 `Track.link` est une URL neutre : `trackViewUrl` d'iTunes est traduit dans l'adaptateur et ne fuit pas.
 

@@ -43,13 +43,18 @@ export class NotificationDispatcher {
   async dispatch(preferences: UserPreferences, message: WakeUpMessage): Promise<DispatchResult> {
     const attempts: DeliveryAttempt[] = [];
     for (const candidate of this.#candidatesFor(preferences)) {
-      const attempt = await this.#tryChannel(candidate, message);
+      const attempt = await this.#attempt(candidate, message);
       attempts.push(attempt);
       if (attempt.success) {
         return { deliveredVia: attempt.channel, attempts };
       }
+      this.#logger.warn(`Échec du canal ${attempt.channel}, bascule sur le canal suivant`, {
+        userId: preferences.userId.value,
+        channel: attempt.channel,
+        reason: attempt.error,
+      });
     }
-    attempts.push(await this.#tryLastResort(preferences, message));
+    attempts.push(await this.#deliverAsLastResort(preferences, message));
     return { deliveredVia: this.#lastResortChannel.type, attempts };
   }
 
@@ -76,7 +81,36 @@ export class NotificationDispatcher {
     return candidates;
   }
 
-  async #tryChannel(
+  /**
+   * Dernier maillon. Le journal n'a pas de coordonnée propre : il est adressé à l'identifiant de
+   * l'utilisateur. Ce n'est une bascule que si l'utilisateur ne l'a pas choisi comme canal préféré.
+   */
+  async #deliverAsLastResort(
+    preferences: UserPreferences,
+    message: WakeUpMessage,
+  ): Promise<DeliveryAttempt> {
+    const channel = this.#lastResortChannel;
+    const userId = preferences.userId;
+    const context = { userId: userId.value, channel: channel.type };
+    if (preferences.preferredChannel !== channel.type) {
+      this.#logger.warn('Aucun canal disponible, remise au canal de dernier recours', context);
+    }
+    const attempt = await this.#attempt(
+      { channel, recipient: { userId, address: userId.value } },
+      message,
+    );
+    if (!attempt.success) {
+      // Contrat rompu par le dernier recours : on le signale sans interrompre le réveil.
+      this.#logger.error(`Échec du canal de dernier recours ${channel.type}`, {
+        ...context,
+        reason: attempt.error,
+      });
+    }
+    return attempt;
+  }
+
+  /** Un envoi sur un canal, traduit en tentative ; ne lève jamais. */
+  async #attempt(
     { channel, recipient }: Candidate,
     message: WakeUpMessage,
   ): Promise<DeliveryAttempt> {
@@ -87,39 +121,7 @@ export class NotificationDispatcher {
       this.#logger.info('Notification livrée', context);
       return { channel: channel.type, success: true };
     } catch (error) {
-      const reason = describeError(error);
-      this.#logger.warn(`Échec du canal ${channel.type}, bascule sur le canal suivant`, {
-        ...context,
-        reason,
-      });
-      return { channel: channel.type, success: false, error: reason };
-    }
-  }
-
-  /** Le journal n'a pas de coordonnée propre : il est adressé à l'identifiant de l'utilisateur. */
-  async #tryLastResort(
-    preferences: UserPreferences,
-    message: WakeUpMessage,
-  ): Promise<DeliveryAttempt> {
-    const channel = this.#lastResortChannel;
-    const recipient: Recipient = {
-      userId: preferences.userId,
-      address: preferences.userId.value,
-    };
-    const context = { userId: recipient.userId.value, channel: channel.type };
-    this.#logger.warn('Aucun canal disponible, remise au canal de dernier recours', context);
-    try {
-      await channel.send(recipient, message);
-      this.#logger.info('Notification livrée', context);
-      return { channel: channel.type, success: true };
-    } catch (error) {
-      const reason = describeError(error);
-      // Contrat rompu par le dernier recours : on le signale sans interrompre le réveil.
-      this.#logger.error(`Échec du canal de dernier recours ${channel.type}`, {
-        ...context,
-        reason,
-      });
-      return { channel: channel.type, success: false, error: reason };
+      return { channel: channel.type, success: false, error: describeError(error) };
     }
   }
 }

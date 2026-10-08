@@ -8,8 +8,8 @@ import { WakeUpMessage } from '../domain/WakeUpMessage.ts';
 import type { WakeUpReport } from '../domain/WakeUpReport.ts';
 import type { WeatherType } from '../domain/WeatherType.ts';
 import type { DispatchResult, NotificationDispatcher } from './NotificationDispatcher.ts';
-import type { EmergencyPlaylist } from './ports/EmergencyPlaylist.ts';
 import { describeError } from './describeError.ts';
+import type { EmergencyPlaylist } from './ports/EmergencyPlaylist.ts';
 import type { Logger } from './ports/Logger.ts';
 import type { MusicCatalog } from './ports/MusicCatalog.ts';
 import type { UserPreferencesProvider } from './ports/UserPreferencesProvider.ts';
@@ -69,7 +69,7 @@ export class TriggerWakeUp {
     const track = await this.#chooseTrack(preferences.value, command);
     const message = WakeUpMessage.compose(track.value, dayOfWeek, weather);
     const dispatch = await this.#notificationDispatcher.dispatch(preferences.value, message);
-    const delivery = this.#assessDelivery(preferences.value, dispatch);
+    const deliveryDegraded = this.#isDeliveryDegraded(preferences.value, dispatch);
 
     const report: WakeUpReport = {
       userId: userId.value,
@@ -79,7 +79,7 @@ export class TriggerWakeUp {
       trackSource: track.value.source,
       deliveredVia: dispatch.deliveredVia,
       attempts: dispatch.attempts,
-      degraded: preferences.degraded || track.degraded || delivery,
+      degraded: preferences.degraded || track.degraded || deliveryDegraded,
     };
     this.#logger.info('Réveil émis', {
       userId: report.userId,
@@ -127,7 +127,7 @@ export class TriggerWakeUp {
       }
       return { value: track, degraded: false };
     } catch (error) {
-      this.#logger.warn('Catalogue musical indisponible, morceau de secours local', {
+      this.#logger.warn('Résolution du morceau impossible, morceau de secours local', {
         userId: userId.value,
         weather,
         reason: describeError(error),
@@ -137,7 +137,7 @@ export class TriggerWakeUp {
   }
 
   /** Dégradé si le message n'est pas parti, ou pas par le canal préféré. */
-  #assessDelivery(preferences: UserPreferences, dispatch: DispatchResult): boolean {
+  #isDeliveryDegraded(preferences: UserPreferences, dispatch: DispatchResult): boolean {
     const onPreferred = dispatch.deliveredVia === preferences.preferredChannel;
     const allSucceeded = dispatch.attempts.every((attempt) => attempt.success);
     if (onPreferred && allSucceeded) {

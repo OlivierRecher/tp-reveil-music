@@ -442,4 +442,47 @@ describe('TriggerWakeUp', () => {
       },
     );
   });
+
+  describe("détails d'implémentation", () => {
+    it('rend le rapport dégradé quand le canal préféré est sauté faute de coordonnée', async () => {
+      const userPreferencesProvider = new InMemoryPreferences([
+        UserPreferences.create({
+          userId: ALICE,
+          tracksByWeather: { SOLEIL: SUNNY_QUERY },
+          fallbackTrack: ALICE_FALLBACK_QUERY,
+          preferredChannel: 'PUSH',
+          contacts: CONTACTS,
+        }),
+      ]);
+      const { useCase, sms, logger } = setup({ preferences: userPreferencesProvider });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(report.deliveredVia).toBe('EMAIL');
+      expect(sms.calls).toHaveLength(0);
+      expect(report.degraded).toBe(true);
+      const warnings = logger.at('warn').map((entry) => RecordingLogger.text(entry));
+      expect(warnings.some((text) => text.includes('canal préféré indisponible'))).toBe(true);
+    });
+
+    it("ne signale aucune bascule quand l'utilisateur a choisi le journal comme canal préféré", async () => {
+      const userPreferencesProvider = new InMemoryPreferences([
+        UserPreferences.create({
+          userId: ALICE,
+          tracksByWeather: { SOLEIL: SUNNY_QUERY },
+          fallbackTrack: ALICE_FALLBACK_QUERY,
+          preferredChannel: 'LOG',
+          contacts: {},
+        }),
+      ]);
+      const { useCase, lastResort, logger } = setup({ preferences: userPreferencesProvider });
+
+      const report = await useCase.execute(SUNNY_MONDAY);
+
+      expect(lastResort.calls).toHaveLength(1);
+      expect(report.deliveredVia).toBe('LOG');
+      expect(report.degraded).toBe(false);
+      expect(logger.at('warn')).toHaveLength(0);
+    });
+  });
 });
