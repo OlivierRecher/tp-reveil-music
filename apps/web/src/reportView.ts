@@ -1,4 +1,4 @@
-import type { WakeUpReportView } from './wakeUpApi.ts';
+import type { DeliveryAttemptView, WakeUpReportView } from './wakeUpApi.ts';
 
 /** Données prêtes à afficher pour un rapport de réveil (aucune logique dans le rendu DOM). */
 export interface ReportViewModel {
@@ -15,5 +15,21 @@ export interface ReportViewModel {
 
 /** Traduit un rapport validé en modèle de vue (fonction pure). */
 export function toReportViewModel(report: WakeUpReportView): ReportViewModel {
-  throw new Error('Not implemented', { cause: report });
+  const { title, artist, link } = report.track;
+  return {
+    title,
+    artist,
+    ...(link === undefined ? {} : { link }),
+    deliveredVia: `Notifié par ${report.deliveredVia}`,
+    attempts: report.attempts.map(describeAttempt),
+    // Le badge suit uniquement le verdict du serveur, jamais une déduction locale (ADR-0004).
+    degradedBadge: report.degraded,
+  };
+}
+
+function describeAttempt(attempt: DeliveryAttemptView): string {
+  if (attempt.success) return `✓ ${attempt.channel}`;
+  return attempt.error === undefined || attempt.error === ''
+    ? `✗ ${attempt.channel}`
+    : `✗ ${attempt.channel} : ${attempt.error}`;
 }

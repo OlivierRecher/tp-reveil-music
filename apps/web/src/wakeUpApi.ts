@@ -1,3 +1,6 @@
+// `zod/mini` : API fonctionnelle, arborescente (tree-shaking), bundle bien plus léger que `zod`
+// classique pour un client ; elle suffit à notre schéma (objets, chaînes, booléens, listes).
+import { z } from 'zod/mini';
 import type { DayOfWeek, WeatherType } from './wakeUpOptions.ts';
 
 /** Signature de `fetch` injectée (remplacée par un faux en test, aucun accès réseau). */
@@ -46,13 +49,79 @@ export type WakeUpOutcome =
   | { readonly kind: 'invalid-request'; readonly message: string }
   | { readonly kind: 'unavailable'; readonly message: string };
 
+/** URL relative : même origine que la PWA, le proxy Vite ou le serveur la redirige (ADR-0001). */
+const WAKE_UPS_PATH = '/api/wake-ups';
+
+const UNAVAILABLE: WakeUpOutcome = {
+  kind: 'unavailable',
+  message: 'Service indisponible : réessayez dans quelques instants.',
+};
+
+const INVALID_REQUEST: WakeUpOutcome = {
+  kind: 'invalid-request',
+  message: 'Saisie invalide : vérifiez l’utilisateur, le jour et la météo.',
+};
+
+const nonEmptyString = z.string().check(z.minLength(1));
+
+/** Contrat de la réponse 200 ; `z.object` retire les champs inconnus (rien ne fuite vers la vue). */
+const reportSchema = z.object({
+  userId: nonEmptyString,
+  dayOfWeek: nonEmptyString,
+  weather: nonEmptyString,
+  track: z.object({
+    title: nonEmptyString,
+    artist: nonEmptyString,
+    link: z.exactOptional(z.string()),
+    source: nonEmptyString,
+  }),
+  trackSource: nonEmptyString,
+  deliveredVia: nonEmptyString,
+  attempts: z.array(
+    z.object({
+      channel: nonEmptyString,
+      success: z.boolean(),
+      error: z.exactOptional(z.string()),
+    }),
+  ),
+  degraded: z.boolean(),
+});
+
 /**
  * Déclenche un réveil via notre API (même origine, ADR-0001). La réponse 200 est validée avant
  * d'être exposée ; toute erreur (400, 5xx, réseau, format inattendu) devient un `WakeUpOutcome`.
  */
-export function requestWakeUp(
+export async function requestWakeUp(
   request: WakeUpRequest,
   httpFetch: HttpFetch,
 ): Promise<WakeUpOutcome> {
-  return Promise.reject(new Error('Not implemented', { cause: { request, httpFetch } }));
+  let response: Response;
+  try {
+    response = await httpFetch(WAKE_UPS_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        userId: request.userId,
+        dayOfWeek: request.dayOfWeek,
+        weather: request.weather,
+      }),
+    });
+  } catch {
+    return UNAVAILABLE;
+  }
+
+  if (response.status === 400) return INVALID_REQUEST;
+  if (!response.ok) return UNAVAILABLE;
+
+  const parsed = reportSchema.safeParse(await readJson(response));
+  return parsed.success ? { kind: 'report', report: parsed.data } : UNAVAILABLE;
+}
+
+/** Lit le corps JSON ; un corps illisible devient `undefined`, rejeté ensuite par le schéma. */
+async function readJson(response: Response): Promise<unknown> {
+  try {
+    return (await response.json()) as unknown;
+  } catch {
+    return undefined;
+  }
 }
