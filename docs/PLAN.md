@@ -140,16 +140,19 @@ Implémentation :
 
 ## Phase 5 — Client PWA (`apps/web`)
 
-- [ ] 🧪 Rédiger les critères `CA-WEB-…` dans `docs/ACCEPTANCE_CRITERIA.md` et les faire valider
-- [ ] 🧪 Tests rouges des critères comportant de la logique (appel API, rendu du rapport, erreurs réseau)
+- [x] 🧪 Rédiger les critères `CA-WEB-…` dans `docs/ACCEPTANCE_CRITERIA.md` et les faire valider
+- [x] 🧪 Tests rouges des critères comportant de la logique (appel API, rendu du rapport, erreurs réseau)
 
 Implémentation :
 
-- [ ] Formulaire (utilisateur, jour, météo) → `POST /api/wake-ups`, affichage du rapport (morceau,
+- [x] Formulaire (utilisateur, jour, météo) → `POST /api/wake-ups`, affichage du rapport (morceau,
       canal utilisé, tentatives, badge « mode dégradé »)
 - [ ] Manifest + icônes, service worker (coquille hors ligne), installable (vérification Lighthouse)
-- [ ] Accessibilité de base (labels, contrastes, navigation clavier)
-- [ ] Ajouter `apps/web` à la couverture si de la logique non triviale y apparaît
+      — build vérifié (manifest, `sw.js`, icônes 192/512 générées par `scripts/generate-icons.mjs`),
+      Lighthouse à faire en démo
+- [ ] Accessibilité de base (labels, contrastes, navigation clavier) — implémentée (`label for`,
+      `aria-live`, focus visible, contrastes AA calculés), revue Lighthouse à faire en démo
+- [x] Ajouter `apps/web` à la couverture si de la logique non triviale y apparaît
 
 ## Phase 6 — Finalisation et livrables
 
