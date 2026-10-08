@@ -32,7 +32,8 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │                 FailingUserPreferencesProvider (panne simulée, démo)                         │
 │   music/        ItunesMusicProvider · MusicBrainzMusicProvider · LocalMusicProvider          │
 │                 décorateurs : Cached / RateLimited / Resilient · FallbackMusicCatalog        │
-│   notification/ mocks vendeurs : FakeEmailClient · FakeSmsGateway · FakePushService          │
+│   notification/ interfaces fournisseur : EmailClient · SmsGateway · PushService              │
+│                 mocks (vendors/) : FakeEmailClient · FakeSmsGateway · FakePushService        │
 │                 adaptateurs : Email/Sms/PushChannelAdapter · LogChannel (dernier recours)    │
 │                 FileNotificationLog (journal des envois simulés : fichier + console)         │
 │   logging/      PinoLogger                                                                   │
@@ -57,10 +58,11 @@ chaque bascule est journalisée en `warn` (avec `userId` et `reason`) et rend le
 2. **Sélection** (domaine pur) : `TrackSelectionPolicy.select(preferences, weather, dayOfWeek)` renvoie
    la `TrackQuery` associée à la météo, sinon le morceau de secours de l'utilisateur (fonctionnement
    **normal**, pas dégradé).
-3. **Résolution** : `MusicCatalog.resolve(query)` → `Track`. L'implémentation est une chaîne
-   (`FallbackMusicCatalog`) : iTunes → MusicBrainz → fallback local, chaque maillon décoré par
-   cache, limitation de débit et timeout/circuit breaker. Un morceau de source `local` renvoyé par la
-   chaîne est une bascule (`degraded = true`). Si malgré tout une exception remonte, le cas d'usage
+3. **Résolution** : `MusicCatalog.resolve(query)` → `{ track, degraded }`. L'implémentation est une
+   chaîne (`FallbackMusicCatalog`) : iTunes → MusicBrainz → fallback local, chaque maillon décoré par
+   cache, limitation de débit et timeout/circuit breaker. La chaîne **signale** le recours au fallback
+   local (`degraded: true`) ; le cas d'usage suit ce signal et n'interprète jamais la source du
+   morceau (CA-APP-10). Si malgré tout une exception remonte, le cas d'usage
    prend `EmergencyPlaylist.pick(weather)` (double filet de sécurité, la chaîne étant de
    l'infrastructure), `degraded = true`.
 4. **Message** (domaine) : `WakeUpMessage.compose(track, dayOfWeek, weather)` (« Bon lundi ! Il pleut… »).
@@ -83,8 +85,12 @@ interface UserPreferencesProvider {
   /** `null` si l'utilisateur est inconnu ; rejette si le service est en panne. */
   findByUserId(userId: UserId): Promise<UserPreferences | null>;
 }
+interface ResolvedTrack {
+  readonly track: Track; // Track = { title, artist, link?, source }
+  readonly degraded: boolean; // repli sur le fallback local, signalé par le catalogue
+}
 interface MusicCatalog {
-  resolve(query: TrackQuery): Promise<Track>; // Track = { title, artist, link?, source }
+  resolve(query: TrackQuery): Promise<ResolvedTrack>;
 }
 interface EmergencyPlaylist {
   pick(weather: WeatherType): Track; // synchrone, ne peut pas échouer
@@ -142,18 +148,18 @@ aucun appel musical ni aucun envoi. Ils ne connaissent que `@reveil/core` et la 
 
 ## 4. Design patterns retenus
 
-| Pattern                               | Où                                                                          | Problème métier résolu                                                                                |
-| ------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Ports & Adapters** (hexagonal)      | partout                                                                     | changer de fournisseur ou de canal sans toucher au métier                                             |
-| **Dependency Injection / IoC**        | `composition/compositionRoot.ts` (Composition Root, DI manuelle, ADR-0007)  | exigence « aucun `new` d'implémentation concrète » hors de la composition root                        |
-| **Adapter**                           | `ItunesMusicProvider`, `MusicBrainzMusicProvider`                           | traduire chaque API vers `Track` (anti-corruption layer + zod)                                        |
-| **Adapter**                           | `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter`            | ramener 3 mocks aux interfaces différentes vers `NotificationChannel`                                 |
-| **Decorator**                         | `CachedMusicProvider`, `RateLimitedMusicProvider`, `ResilientMusicProvider` | ajouter cache / quota 20 req/min (échec immédiat, ADR-0006) / timeout sans modifier les fournisseurs  |
-| **Chain of Responsibility**           | `FallbackMusicCatalog`, `NotificationDispatcher`                            | mode dégradé : essayer le suivant quand un maillon échoue                                             |
-| **Strategy**                          | `TrackSelectionPolicy` ; choix du canal par `ChannelType`                   | règles de sélection isolées et testables                                                              |
-| **Registry** (+ Factory)              | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 valeur de `ChannelType` + 1 ligne d'enregistrement |
-| **Circuit Breaker / Retry / Timeout** | `ResilientMusicProvider` (cockatiel)                                        | ne pas attendre un fournisseur en panne à l'heure du réveil                                           |
-| **Value Object / Factory method**     | `Track.create`, `UserId.parse`, `WakeUpMessage.compose`                     | invariants garantis, pas d'objet invalide dans le domaine                                             |
+| Pattern                               | Où                                                                          | Problème métier résolu                                                                                                                                                             |
+| ------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ports & Adapters** (hexagonal)      | partout                                                                     | changer de fournisseur ou de canal sans toucher au métier                                                                                                                          |
+| **Dependency Injection / IoC**        | `composition/compositionRoot.ts` (Composition Root, DI manuelle, ADR-0007)  | exigence « aucun `new` d'implémentation concrète » hors de la composition root                                                                                                     |
+| **Adapter**                           | `ItunesMusicProvider`, `MusicBrainzMusicProvider`                           | traduire chaque API vers `Track` (anti-corruption layer + zod)                                                                                                                     |
+| **Adapter**                           | `EmailChannelAdapter`, `SmsChannelAdapter`, `PushChannelAdapter`            | ramener 3 fournisseurs aux interfaces différentes vers `NotificationChannel` ; chaque adaptateur dépend de l'interface du fournisseur (`EmailClient`…), jamais du mock (CA-NOT-06) |
+| **Decorator**                         | `CachedMusicProvider`, `RateLimitedMusicProvider`, `ResilientMusicProvider` | ajouter cache / quota 20 req/min (échec immédiat, ADR-0006) / timeout sans modifier les fournisseurs                                                                               |
+| **Chain of Responsibility**           | `FallbackMusicCatalog`, `NotificationDispatcher`                            | mode dégradé : essayer le suivant quand un maillon échoue                                                                                                                          |
+| **Strategy**                          | `TrackSelectionPolicy` ; choix du canal par `ChannelType`                   | règles de sélection isolées et testables                                                                                                                                           |
+| **Registry** (+ Factory)              | canaux indexés par `ChannelType`, chaîne musicale par config                | ajouter WhatsApp ou appel vocal = 1 adaptateur + 1 valeur de `ChannelType` + 1 ligne d'enregistrement                                                                              |
+| **Circuit Breaker / Retry / Timeout** | `ResilientMusicProvider` (cockatiel)                                        | ne pas attendre un fournisseur en panne à l'heure du réveil                                                                                                                        |
+| **Value Object / Factory method**     | `Track.create`, `UserId.parse`, `WakeUpMessage.compose`                     | invariants garantis, pas d'objet invalide dans le domaine                                                                                                                          |
 
 Patterns volontairement **non** retenus : Singleton « à la main » (la composition root construit chaque
 composant une seule fois), conteneur DI (aucun scope ni cycle de vie à gérer, ADR-0007),

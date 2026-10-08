@@ -12,7 +12,7 @@ npm run test:coverage   # + rapport texte, HTML (coverage/index.html) et lcov
 
 ## Traçabilité
 
-Chacun des 49 critères `CA-DOM/APP/MUS/NOT/PRF/CMP/WEB-…` est vérifié par au moins un test portant son
+Chacun des 51 critères `CA-DOM/APP/MUS/NOT/PRF/CMP/WEB-…` est vérifié par au moins un test portant son
 ID (`grep -rhoE "\[CA-[A-Z]+-[0-9]+\]" packages/*/test apps/*/test | sort -u`) ; les critères
 transverses `CA-ARC/DEP-…` le sont par l'outillage (`lint`, `arch:check`, `deps:*`).
 

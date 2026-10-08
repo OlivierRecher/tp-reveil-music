@@ -83,8 +83,8 @@ dans la composition root. Détails, flux complet et traçabilité des exigences 
 
 ## Qualité et tests
 
-Les tests sont écrits **avant** le code, à partir de 49 critères d'acceptation tirés de l'énoncé
-(`[CA-APP-03] envoie un morceau local quand le catalogue est en panne`…). 475 tests Vitest, sans aucun
+Les tests sont écrits **avant** le code, à partir de 51 critères d'acceptation tirés de l'énoncé
+(`[CA-APP-03] envoie un morceau local quand le catalogue est en panne`…). 486 tests Vitest, sans aucun
 accès réseau (le `fetch` est injecté, les réponses réelles d'iTunes et MusicBrainz sont des fixtures).
 Couverture : **99,8 % lignes, 96,8 % branches** (seuils bloquants 90 / 85 %). La CI GitHub Actions
 rejoue `npm run verify` à chaque PR. Détails et branches non couvertes justifiées :

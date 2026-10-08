@@ -26,6 +26,9 @@ FallbackMusicCatalog
 - `RateLimited` : **p-throttle** (MIT, zéro dépendance). Au-delà du budget, on échoue immédiatement
   vers le maillon suivant plutôt que de mettre en file d'attente.
 - `Cached` : **lru-cache** (BlueOak-1.0.0, permissive, OSI) avec TTL. La clé est la requête normalisée.
+- Le catalogue renvoie `{ track, degraded }` : `degraded` vaut `true` quand le fallback local a répondu.
+  Le cas d'usage suit ce signal et ne compare jamais la source du morceau à `local` (ajout du
+  2026-10-08, CA-APP-10, suite à une revue externe).
 - Filet final dans le cas d'usage : `EmergencyPlaylist` si une exception remonte malgré tout.
 
 **Notification** : `NotificationDispatcher` essaie le canal préféré, puis les autres canaux disponibles
