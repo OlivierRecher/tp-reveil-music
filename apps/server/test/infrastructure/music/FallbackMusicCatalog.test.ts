@@ -28,7 +28,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog, logger } = chain([itunes, musicBrainz], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('itunes');
       expect(callLog).toEqual(['itunes']);
@@ -43,7 +43,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog } = chain([itunes, musicBrainz, other], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('musicbrainz');
       expect(track.toJSON()).toEqual(musicBrainz.trackFor(QUERY).toJSON());
@@ -56,7 +56,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz', callLog).fail();
       const { catalog } = chain([musicBrainz, itunes], new ScriptedMusicProvider('local', callLog));
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('itunes');
       expect(callLog).toEqual(['musicbrainz', 'itunes']);
@@ -92,7 +92,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz');
       const { catalog } = chain([itunes, musicBrainz]);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('musicbrainz');
     });
@@ -106,7 +106,7 @@ describe('FallbackMusicCatalog', () => {
       const local = new ScriptedMusicProvider('local', callLog);
       const { catalog, logger } = chain([itunes, musicBrainz], local);
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe('local');
       expect(callLog).toEqual(['itunes', 'musicbrainz', 'local']);
@@ -118,7 +118,7 @@ describe('FallbackMusicCatalog', () => {
       const musicBrainz = new ScriptedMusicProvider('musicbrainz').fail(new Error('HTTP 503'));
       const { catalog } = chain([itunes, musicBrainz], new LocalMusicProvider());
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe(LOCAL_TRACK_SOURCE);
     });
@@ -126,7 +126,7 @@ describe('FallbackMusicCatalog', () => {
     it('[CA-MUS-08] sans fournisseur distant configuré, le fournisseur local répond', async () => {
       const { catalog } = chain([], new LocalMusicProvider());
 
-      const track = await catalog.resolve(QUERY);
+      const track = (await catalog.resolve(QUERY)).track;
 
       expect(track.source).toBe(LOCAL_TRACK_SOURCE);
     });

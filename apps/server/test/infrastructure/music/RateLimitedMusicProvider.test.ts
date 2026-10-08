@@ -112,7 +112,9 @@ describe('RateLimitedMusicProvider', () => {
 
     const outcome = settled();
     expect(outcome.status).toBe('fulfilled');
-    expect(outcome.status === 'fulfilled' ? outcome.value.source : undefined).toBe('musicbrainz');
+    expect(outcome.status === 'fulfilled' ? outcome.value.track.source : undefined).toBe(
+      'musicbrainz',
+    );
     expect(itunes.calls).toBe(MAX_REQUESTS);
     expect(musicBrainz.calls).toBe(1);
   });

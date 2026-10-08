@@ -1,4 +1,4 @@
-import type { MusicCatalog, Track, TrackQuery } from '../../src/index.ts';
+import type { MusicCatalog, ResolvedTrack, TrackQuery } from '../../src/index.ts';
 
 /** Catalogue en panne : rejette toujours. */
 export class FailingMusicCatalog implements MusicCatalog {
@@ -9,7 +9,7 @@ export class FailingMusicCatalog implements MusicCatalog {
     this.#error = error;
   }
 
-  resolve(query: TrackQuery): Promise<Track> {
+  resolve(query: TrackQuery): Promise<ResolvedTrack> {
     this.queries.push(query);
     return Promise.reject(this.#error);
   }

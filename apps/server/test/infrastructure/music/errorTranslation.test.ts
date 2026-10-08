@@ -38,7 +38,7 @@ describe('traduction des erreurs inattendues', () => {
       logger,
     });
 
-    const track = await catalog.resolve(QUERY);
+    const track = (await catalog.resolve(QUERY)).track;
 
     expect(track.source).toBe('local');
     expect(

@@ -242,7 +242,9 @@ describe('TriggerWakeUp', () => {
         artist: 'The Beatles',
         source: LOCAL_TRACK_SOURCE,
       });
-      const { useCase, email } = setup({ catalog: new StubMusicCatalog(localTrack) });
+      const { useCase, email } = setup({
+        catalog: new StubMusicCatalog(localTrack, { degraded: true }),
+      });
 
       const report = await useCase.execute(SUNNY_MONDAY);
 
@@ -406,10 +408,11 @@ describe('TriggerWakeUp', () => {
         command: SUNNY_MONDAY,
       },
       {
-        name: 'morceau local renvoyé par le catalogue',
+        name: 'repli local signalé par le catalogue',
         overrides: () => ({
           catalog: new StubMusicCatalog(
             Track.create({ title: 'Morning', artist: 'Grieg', source: LOCAL_TRACK_SOURCE }),
+            { degraded: true },
           ),
         }),
         command: SUNNY_MONDAY,

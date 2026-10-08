@@ -34,7 +34,7 @@ export { WeatherTrackSelectionPolicy } from './domain/WeatherTrackSelectionPolic
 
 // Ports (contrats des adaptateurs)
 export type { UserPreferencesProvider } from './application/ports/UserPreferencesProvider.ts';
-export type { MusicCatalog } from './application/ports/MusicCatalog.ts';
+export type { MusicCatalog, ResolvedTrack } from './application/ports/MusicCatalog.ts';
 export type { EmergencyPlaylist } from './application/ports/EmergencyPlaylist.ts';
 export type { NotificationChannel } from './application/ports/NotificationChannel.ts';
 export type { Logger, LogContext } from './application/ports/Logger.ts';
