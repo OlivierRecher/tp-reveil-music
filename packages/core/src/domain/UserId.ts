@@ -1,21 +1,34 @@
+import { InvalidUserIdError } from './InvalidUserIdError.ts';
+
 /** Identifiant utilisateur (value object) : chaîne non vide, sans espaces superflus. */
 export class UserId {
-  private constructor() {}
+  readonly #value: string;
+
+  private constructor(value: string) {
+    this.#value = value;
+  }
 
   /** Lève `InvalidUserIdError` si l'entrée n'est pas une chaîne non vide (hors espaces). */
   static parse(raw: unknown): UserId {
-    throw new Error('Not implemented', { cause: raw });
+    if (typeof raw !== 'string') {
+      throw new InvalidUserIdError("L'identifiant utilisateur doit être une chaîne de caractères");
+    }
+    const value = raw.trim();
+    if (value === '') {
+      throw new InvalidUserIdError("L'identifiant utilisateur ne peut pas être vide");
+    }
+    return new UserId(value);
   }
 
   get value(): string {
-    throw new Error('Not implemented');
+    return this.#value;
   }
 
   equals(other: UserId): boolean {
-    throw new Error('Not implemented', { cause: other });
+    return this.#value === other.#value;
   }
 
   toString(): string {
-    throw new Error('Not implemented');
+    return this.#value;
   }
 }

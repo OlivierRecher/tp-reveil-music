@@ -5,5 +5,5 @@ export type ChannelType = (typeof CHANNEL_TYPES)[number];
 
 /** Garde de type : vrai si la valeur est exactement un canal connu. */
 export function isChannelType(value: unknown): value is ChannelType {
-  throw new Error('Not implemented', { cause: value });
+  return CHANNEL_TYPES.some((channel) => channel === value);
 }

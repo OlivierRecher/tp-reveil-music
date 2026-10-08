@@ -70,3 +70,23 @@ describe('WakeUpMessage', () => {
     expect(message.weather).toBe('NEIGE');
   });
 });
+
+describe('WakeUpMessage (détails de rédaction)', () => {
+  it('le sujet salue le jour du réveil', () => {
+    expect(WakeUpMessage.compose(sampleTrack(), 'LUNDI', 'SOLEIL').subject).toBe('Bon lundi !');
+  });
+
+  it('le corps propose le lien d’écoute quand il est connu', () => {
+    const message = WakeUpMessage.compose(sampleTrack(), 'MARDI', 'PLUIE');
+
+    expect(message.body).toContain('https://example.org/here-comes-the-sun');
+  });
+
+  it('le corps ne propose pas d’écoute sans lien', () => {
+    const track = Track.create({ title: 'Clair de lune', artist: 'Debussy', source: 'local' });
+    const message = WakeUpMessage.compose(track, 'MARDI', 'PLUIE');
+
+    expect(message.body).not.toMatch(/écouter/i);
+    expect(message.body).toContain('« Clair de lune » de Debussy');
+  });
+});

@@ -63,3 +63,23 @@ describe('UserPreferences', () => {
     });
   });
 });
+
+describe('UserPreferences (immutabilité)', () => {
+  it('une modification ultérieure des objets fournis ne change pas les préférences', () => {
+    const tracksByWeather: Partial<Record<'PLUIE' | 'NEIGE', TrackQuery>> = {};
+    const contacts: Partial<Record<'SMS' | 'EMAIL', string>> = { SMS: '+33600000000' };
+    const preferences = UserPreferences.create({
+      userId: UserId.parse('user-42'),
+      tracksByWeather,
+      fallbackTrack: TrackQuery.create({ title: 'Wake Me Up' }),
+      preferredChannel: 'SMS',
+      contacts,
+    });
+
+    tracksByWeather.NEIGE = TrackQuery.create({ title: 'Let It Snow' });
+    contacts.SMS = '+33611111111';
+
+    expect(preferences.trackFor('NEIGE')).toBeUndefined();
+    expect(preferences.contactFor('SMS')).toBe('+33600000000');
+  });
+});

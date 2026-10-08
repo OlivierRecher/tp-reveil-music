@@ -1,5 +1,5 @@
 import type { ChannelType } from './ChannelType.ts';
-import type { TrackQuery } from './TrackQuery.ts';
+import { TrackQuery } from './TrackQuery.ts';
 import type { UserId } from './UserId.ts';
 import type { WeatherType } from './WeatherType.ts';
 
@@ -11,36 +11,61 @@ export interface UserPreferencesProps {
   readonly contacts: Partial<Readonly<Record<ChannelType, string>>>;
 }
 
+/** Morceau générique proposé quand les préférences de l'utilisateur sont indisponibles. */
+const DEFAULT_FALLBACK_TRACK = TrackQuery.create({
+  title: 'Here Comes the Sun',
+  artist: 'The Beatles',
+});
+
 /** Préférences d'un utilisateur : morceau par météo (partiel), secours, canal, coordonnées. */
 export class UserPreferences {
-  private constructor() {}
+  readonly #userId: UserId;
+  readonly #tracksByWeather: Partial<Readonly<Record<WeatherType, TrackQuery>>>;
+  readonly #fallbackTrack: TrackQuery;
+  readonly #preferredChannel: ChannelType;
+  readonly #contacts: Partial<Readonly<Record<ChannelType, string>>>;
+
+  private constructor(props: UserPreferencesProps) {
+    this.#userId = props.userId;
+    // Copies figées : l'appelant ne peut plus modifier les préférences après création.
+    this.#tracksByWeather = Object.freeze({ ...props.tracksByWeather });
+    this.#fallbackTrack = props.fallbackTrack;
+    this.#preferredChannel = props.preferredChannel;
+    this.#contacts = Object.freeze({ ...props.contacts });
+  }
 
   static create(props: UserPreferencesProps): UserPreferences {
-    throw new Error('Not implemented', { cause: props });
+    return new UserPreferences(props);
   }
 
   /** Préférences du mode dégradé : aucune météo couverte, morceau générique, canal `LOG`. */
   static createDefault(userId: UserId): UserPreferences {
-    throw new Error('Not implemented', { cause: userId });
+    return new UserPreferences({
+      userId,
+      tracksByWeather: {},
+      fallbackTrack: DEFAULT_FALLBACK_TRACK,
+      preferredChannel: 'LOG',
+      contacts: {},
+    });
   }
 
   get userId(): UserId {
-    throw new Error('Not implemented');
+    return this.#userId;
   }
 
   get fallbackTrack(): TrackQuery {
-    throw new Error('Not implemented');
+    return this.#fallbackTrack;
   }
 
   get preferredChannel(): ChannelType {
-    throw new Error('Not implemented');
+    return this.#preferredChannel;
   }
 
   trackFor(weather: WeatherType): TrackQuery | undefined {
-    throw new Error('Not implemented', { cause: weather });
+    return this.#tracksByWeather[weather];
   }
 
   contactFor(channel: ChannelType): string | undefined {
-    throw new Error('Not implemented', { cause: channel });
+    return this.#contacts[channel];
   }
 }

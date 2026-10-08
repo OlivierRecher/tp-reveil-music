@@ -81,3 +81,25 @@ describe('Track', () => {
     expect(field in track).toBe(false);
   });
 });
+
+describe('Track (détails de normalisation)', () => {
+  it('retire les espaces entourant les champs', () => {
+    const track = Track.create({
+      title: '  Clair de lune ',
+      artist: ' Debussy',
+      link: ' https://example.org/clair ',
+      source: ' local ',
+    });
+
+    expect(track.toJSON()).toEqual({
+      title: 'Clair de lune',
+      artist: 'Debussy',
+      link: 'https://example.org/clair',
+      source: 'local',
+    });
+  });
+
+  it('un lien vide ou blanc est considéré comme absent', () => {
+    expect(Track.create({ ...VALID_PROPS, link: '   ' }).link).toBeUndefined();
+  });
+});
