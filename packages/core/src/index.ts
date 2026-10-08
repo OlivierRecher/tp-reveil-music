@@ -43,4 +43,5 @@ export type { Logger, LogContext } from './application/ports/Logger.ts';
 export { NotificationDispatcher } from './application/NotificationDispatcher.ts';
 export type { DispatchResult } from './application/NotificationDispatcher.ts';
 export { TriggerWakeUp } from './application/TriggerWakeUp.ts';
+export { describeError } from './application/describeError.ts';
 export type { WakeUpCommand } from './application/TriggerWakeUp.ts';

@@ -20,11 +20,11 @@ export class FileNotificationLog implements NotificationLog {
   write(entry: string): void {
     const line = `${new Date().toISOString()} ${entry}`;
     console.log(line);
+    // Écriture synchrone volontaire : volume faible (un envoi par réveil), ordre des lignes garanti.
     try {
       mkdirSync(dirname(this.#notificationLogFile), { recursive: true });
       appendFileSync(this.#notificationLogFile, `${line}\n`, 'utf8');
     } catch (error) {
-      // Écriture synchrone volontaire : volume faible (un envoi par réveil), ordre des lignes garanti.
       console.error(
         `Journal des notifications : écriture impossible dans ${this.#notificationLogFile}`,
         error,

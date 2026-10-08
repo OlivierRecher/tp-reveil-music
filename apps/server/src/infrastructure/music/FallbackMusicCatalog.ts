@@ -1,3 +1,4 @@
+import { describeError } from '@reveil/core';
 import type { Logger, MusicCatalog, Track, TrackQuery } from '@reveil/core';
 import type { MusicProvider } from './MusicProvider.ts';
 
@@ -30,7 +31,7 @@ export class FallbackMusicCatalog implements MusicCatalog {
         // Toute erreur, typée ou non, fait basculer sur le maillon suivant : jamais de crash.
         this.#logger.warn(`Fournisseur musical « ${provider.name} » en échec, bascule`, {
           provider: provider.name,
-          error: error instanceof Error ? error.message : String(error),
+          error: describeError(error),
         });
       }
     }

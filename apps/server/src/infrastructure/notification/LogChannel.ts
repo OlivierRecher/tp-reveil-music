@@ -1,3 +1,4 @@
+import { describeError } from '@reveil/core';
 import type {
   ChannelType,
   Logger,
@@ -36,7 +37,7 @@ export class LogChannel implements NotificationChannel {
         userId,
         subject: message.subject,
         body: message.body,
-        error: error instanceof Error ? error.message : String(error),
+        error: describeError(error),
       });
     }
     return Promise.resolve();

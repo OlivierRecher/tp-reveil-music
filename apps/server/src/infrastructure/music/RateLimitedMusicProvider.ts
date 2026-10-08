@@ -45,7 +45,9 @@ export class RateLimitedMusicProvider implements MusicProvider {
   /** Réserve une place dans la fenêtre courante ; `false` si le budget est épuisé. */
   #tryAcquire(): boolean {
     const now = Date.now();
-    while (this.#acceptedAt.length > 0 && now - (this.#acceptedAt[0] ?? now) >= this.#intervalMs) {
+    // Oublie les appels sortis de la fenêtre glissante `]now - intervalMs, now]`.
+    const windowStart = now - this.#intervalMs;
+    while ((this.#acceptedAt[0] ?? Number.POSITIVE_INFINITY) <= windowStart) {
       this.#acceptedAt.shift();
     }
     if (this.#acceptedAt.length >= this.#maxRequests) {

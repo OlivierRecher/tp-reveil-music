@@ -29,10 +29,12 @@ automatiquement par `dependency-cruiser` (`npm run arch:check`) et ESLint.
 │                                  │ implémentent les ports                                    │
 │  infrastructure/                                                                             │
 │   preferences/  InMemoryUserPreferencesProvider (mock du service interne)                    │
+│                 FailingUserPreferencesProvider (panne simulée, démo)                         │
 │   music/        ItunesMusicProvider · MusicBrainzMusicProvider · LocalMusicProvider          │
 │                 décorateurs : Cached / RateLimited / Resilient · FallbackMusicCatalog        │
 │   notification/ mocks vendeurs : FakeEmailClient · FakeSmsGateway · FakePushService          │
 │                 adaptateurs : Email/Sms/PushChannelAdapter · LogChannel (dernier recours)    │
+│                 FileNotificationLog (journal des envois simulés : fichier + console)         │
 │   logging/      PinoLogger                                                                   │
 │  composition/container.ts  ← SEUL endroit qui connaît les classes concrètes (awilix)         │
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
