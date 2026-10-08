@@ -1,5 +1,5 @@
-export const SMS_STATUSES = ['QUEUED', 'REJECTED'] as const;
-export type SmsStatus = (typeof SMS_STATUSES)[number];
+/** Statut renvoyé par la passerelle (type seul : aucune valeur n'est lue à l'exécution). */
+export type SmsStatus = 'QUEUED' | 'REJECTED';
 
 export interface SmsResult {
   readonly status: SmsStatus;
